@@ -1,0 +1,38 @@
+version: '3'
+
+services:
+  app:
+    build: .
+    ports:
+      - 8002:8000
+    environment:
+      - NODE_ENV=development
+      - HOST=0.0.0.0
+      - PORT=8000
+      - PLAYGROUND=true
+      - INTROSPECTION=true
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
+      - POSTGRES_USERNAME=admin
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_DB=finando.local
+    networks:
+      finando:
+        aliases:
+          - transactions-graphql-api
+  db:
+    image: postgres
+    restart: always
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: finando.local
+    networks:
+      finando:
+        aliases:
+          - db
+networks:
+  finando:
+    name: finando
