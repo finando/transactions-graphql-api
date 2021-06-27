@@ -14,11 +14,11 @@ enum Currency {
 model Transaction {
   id          String   @id @default(cuid())
   userId      String
-  fromAccount String
-  toAccount   String
+  fromAccount String?
+  toAccount   String?
   amount      Int      @default(0)
   currency    Currency @default(NOK)
-  description String
+  description String?
   tags        String[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @default(now()) @updatedAt
