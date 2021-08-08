@@ -20,7 +20,7 @@ An application for managing account transactions.
 - Build a Docker container using the following command:
   - `docker build -t transactions-graphql-api .`
 - Run the container using the following comand:
-  - `docker run -d -p 8002:8000 -e NODE_ENV -e HOST -e PORT -e PLAYGROUND -e INTROSPECTION -e POSTGRES_HOST -e POSTGRES_PORT -e POSTGRES_USERNAME -e POSTGRES_PASSWORD -e POSTGRES_DB transactions-graphql-api`
+  - `docker run -d -p 8002:8000 -e NODE_ENV -e HOST -e PORT -e POSTGRES_HOST -e POSTGRES_PORT -e POSTGRES_USERNAME -e POSTGRES_PASSWORD -e POSTGRES_DB transactions-graphql-api`
 
 #### Running application using Docker Compose
 
@@ -38,14 +38,6 @@ An application for managing account transactions.
 
 `PORT` - application port (not necessary)
   - `8002` (default)
-
-`PLAYGROUND` - makes GraphQL Playground available at root URL
-  - `true`
-  - `false`
-
-`INTROSPECTION` - enables or disables introspection query
-  - `true`
-  - `false`
 
 `POSTGRES_HOST` - Postgres host
 
