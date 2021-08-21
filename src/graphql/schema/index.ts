@@ -1,8 +1,8 @@
-import { buildFederatedSchema } from '@apollo/federation';
+import { buildSubgraphSchema } from '@apollo/federation';
 
 import resolvers from '../resolvers';
 import typeDefs from '../type-defs';
 
-const schema = buildFederatedSchema([{ typeDefs, resolvers }]);
+const schema = buildSubgraphSchema([{ typeDefs, resolvers }]);
 
 export default schema;
