@@ -3,18 +3,18 @@ import type { Transaction as TransactionDBO, Currency } from '@prisma/client';
 export interface Transaction extends TransactionDBO {}
 
 export interface CreateTransactionInput {
-  fromAccount: string;
-  toAccount: string;
-  amount: number;
+  account: string;
+  debit: number;
+  credit: number;
   currency: Currency;
   description?: string;
   tags?: string[];
 }
 
 export interface UpdateTransactionInput {
-  fromAccount?: string;
-  toAccount?: string;
-  amount?: number;
+  account?: string;
+  debit?: number;
+  credit?: number;
   currency?: Currency;
   description?: string;
   tags?: string[];

@@ -14,9 +14,9 @@ enum Currency {
 model Transaction {
   id          String   @id @default(cuid())
   userId      String
-  fromAccount String
-  toAccount   String
-  amount      Int      @default(0)
+  account     String
+  debit       Int      @default(0)
+  credit      Int      @default(0)
   currency    Currency @default(NOK)
   description String?
   tags        String[]
