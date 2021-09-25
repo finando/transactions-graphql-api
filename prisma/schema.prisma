@@ -117,7 +117,7 @@ enum Tag {
 model Transaction {
   id          String   @id @default(cuid())
   userId      String
-  entires     Entry[]
+  entries     Entry[]
   description String?
   tags        Tag[]
   createdAt   DateTime @default(now())
