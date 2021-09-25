@@ -1,3 +1,4 @@
+import { resolvers as scalarResolvers } from 'graphql-scalars';
 import { createRootResolver } from '@app/utils/common';
 
 import {
@@ -6,5 +7,6 @@ import {
 } from './transaction';
 
 export default {
-  ...createRootResolver({ ...transactionQueries }, { ...transactionMutations })
+  ...createRootResolver({ ...transactionQueries }, { ...transactionMutations }),
+  ...scalarResolvers
 };
