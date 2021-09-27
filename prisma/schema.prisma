@@ -131,5 +131,5 @@ model Entry {
   credit        Int         @default(0)
   currency      Currency    @default(NOK)
   transactionId String
-  transaction   Transaction @relation(fields: [transactionId], references: [id])
+  transaction   Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 }
