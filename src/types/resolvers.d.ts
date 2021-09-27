@@ -1,4 +1,4 @@
-import type { Operation as OperationType } from '@app/enums';
+import type { Operation } from '@app/enums';
 
 import type {
   Resolver,
@@ -6,17 +6,31 @@ import type {
   ListTransactionsParams,
   UpdateTransactionParams,
   DeleteTransactionParams,
-  Transaction
+  Transaction,
+  BudgetAccountRootObject,
+  TrackingAccountRootObject
 } from '.';
 
 export interface TransactionResolvers {
-  [OperationType.QUERY]: {
+  [Operation.QUERY]: {
     getTransaction: Resolver<GetTransactionParams, Transaction | null>;
     listTransactions: Resolver<ListTransactionsParams, Transaction[]>;
   };
-  [OperationType.MUTATION]: {
+  [Operation.MUTATION]: {
     createTransaction: Resolver<CreateTransactionParams, Transaction>;
     updateTransaction: Resolver<UpdateTransactionParams, Transaction | null>;
     deleteTransaction: Resolver<DeleteTransactionParams, Transaction | null>;
+  };
+}
+
+export interface BudgetAccountResolvers {
+  [Operation.LOOKUP]: {
+    balance: Resolver<unknown, number, BudgetAccountRootObject>;
+  };
+}
+
+export interface TrackingAccountResolvers {
+  [Operation.LOOKUP]: {
+    balance: Resolver<unknown, number, TrackingAccountRootObject>;
   };
 }

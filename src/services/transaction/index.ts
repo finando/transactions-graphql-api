@@ -14,6 +14,7 @@ class TransactionService extends Service {
   ): Promise<Transaction | null> {
     try {
       const transaction = await this.prisma.transaction.findFirst({
+        include: { entries: true },
         where: { id, userId }
       });
 
@@ -36,6 +37,7 @@ class TransactionService extends Service {
   public async listTransactions(userId: string): Promise<Transaction[]> {
     try {
       const transactions = await this.prisma.transaction.findMany({
+        include: { entries: true },
         where: { userId },
         orderBy: {
           createdAt: 'asc'
@@ -54,11 +56,18 @@ class TransactionService extends Service {
 
   public async createTransaction(
     userId: string,
-    data: CreateTransactionInput
+    { entries = [], description, tags, createdAt }: CreateTransactionInput
   ): Promise<Transaction> {
     try {
       const transaction = await this.prisma.transaction.create({
-        data: { ...data, userId }
+        include: { entries: true },
+        data: {
+          userId,
+          entries: { createMany: { data: entries } },
+          description,
+          tags,
+          createdAt
+        }
       });
 
       this.logger.info(
@@ -74,12 +83,25 @@ class TransactionService extends Service {
   public async updateTransaction(
     id: string,
     userId: string,
-    data: UpdateTransactionInput
+    { entries, description, tags, createdAt }: UpdateTransactionInput
   ): Promise<Transaction | null> {
     try {
+      await this.getTransaction(id, userId);
+
       const updatedTransaction = await this.prisma.transaction.update({
+        include: { entries: true },
         where: { id },
-        data
+        data: {
+          entries: {
+            updateMany: entries?.map(({ id: entryId, ...entry }) => ({
+              data: entry,
+              where: { id: entryId, transactionId: id }
+            }))
+          },
+          description,
+          tags,
+          createdAt
+        }
       });
 
       this.logger.info(
@@ -97,7 +119,10 @@ class TransactionService extends Service {
     userId: string
   ): Promise<Transaction | null> {
     try {
+      await this.getTransaction(id, userId);
+
       const deletedTransaction = await this.prisma.transaction.delete({
+        include: { entries: true },
         where: { id }
       });
 
@@ -109,6 +134,35 @@ class TransactionService extends Service {
     } catch (error) {
       throw this.handleError(error);
     }
+  }
+
+  public async calculateAccountBalance(
+    accountId: string,
+    initialBalance: number
+  ): Promise<number> {
+    const [
+      {
+        _sum: { debit }
+      },
+      {
+        _sum: { credit }
+      }
+    ] = await this.prisma.$transaction([
+      this.prisma.entry.aggregate({
+        _sum: {
+          debit: true
+        },
+        where: { account: accountId }
+      }),
+      this.prisma.entry.aggregate({
+        _sum: {
+          credit: true
+        },
+        where: { account: accountId }
+      })
+    ]);
+
+    return (initialBalance ?? 0) + (debit ?? 0) - (credit ?? 0);
   }
 }
 

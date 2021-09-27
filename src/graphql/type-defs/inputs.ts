@@ -1,21 +1,32 @@
 import { gql } from 'apollo-server';
 
 export default gql`
-  input CreateTransactionInput {
-    account: String!
-    debit: Int!
-    credit: Int!
+  input CreateEntryInput {
+    account: ID!
+    debit: NonNegativeInt!
+    credit: NonNegativeInt!
     currency: Currency!
+  }
+
+  input UpdateEntryInput {
+    id: ID!
+    account: ID
+    debit: NonNegativeInt
+    credit: NonNegativeInt
+    currency: Currency
+  }
+
+  input CreateTransactionInput {
+    entries: [CreateEntryInput!]
     description: String
-    tags: [String!]
+    tags: [Tag!]
+    createdAt: DateTime!
   }
 
   input UpdateTransactionInput {
-    account: String
-    debit: Int
-    credit: Int
-    currency: Currency
+    entries: [UpdateEntryInput!]
     description: String
-    tags: [String!]
+    tags: [Tag!]
+    createdAt: DateTime
   }
 `;

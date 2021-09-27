@@ -1,23 +1,56 @@
-import type { Transaction as TransactionDBO, Currency } from '@prisma/client';
+import type {
+  Transaction as TransactionDBO,
+  Entry as EntryDBO,
+  Currency,
+  Tag
+} from '@prisma/client';
 
-export interface Transaction extends TransactionDBO {}
+export interface Entry extends EntryDBO {}
 
-export interface CreateTransactionInput {
+export interface Transaction extends TransactionDBO {
+  entries: Entry[];
+}
+
+export interface BudgetAccountRootObject {
+  id: string;
+  initialBalance: number;
+}
+
+export interface TrackingAccountRootObject {
+  id: string;
+  initialBalance: number;
+}
+
+export interface CreateEntryInput {
   account: string;
   debit: number;
   credit: number;
   currency: Currency;
-  description?: string;
-  tags?: string[];
 }
 
-export interface UpdateTransactionInput {
+export interface UpdateEntryInput {
+  id: string;
   account?: string;
   debit?: number;
   credit?: number;
   currency?: Currency;
-  description?: string;
-  tags?: string[];
 }
 
-export type { Transaction as TransactionDBO } from '@prisma/client';
+export interface CreateTransactionInput {
+  entries?: CreateEntryInput[];
+  description?: string;
+  tags?: Tag[];
+  createdAt?: Date;
+}
+
+export interface UpdateTransactionInput {
+  entries?: UpdateEntryInput[];
+  description?: string;
+  tags?: Tag[];
+  createdAt?: Date;
+}
+
+export type {
+  Transaction as TransactionDBO,
+  Entry as EntryDBO
+} from '@prisma/client';
