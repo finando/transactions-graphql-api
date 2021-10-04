@@ -6,8 +6,10 @@ export const queries: TransactionResolvers[Operation.QUERY] = {
     context: { userId, transactionService },
     input: { id }
   }) => transactionService.getTransaction(id, userId),
-  listTransactions: async ({ context: { userId, transactionService } }) =>
-    transactionService.listTransactions(userId)
+  listTransactions: async ({
+    context: { userId, transactionService },
+    input: { accountId }
+  }) => transactionService.listTransactions(userId, accountId)
 };
 
 export const mutations: TransactionResolvers[Operation.MUTATION] = {

@@ -19,14 +19,10 @@ class TransactionService extends Service {
       });
 
       if (!transaction || transaction?.userId !== userId) {
-        throw new NotFoundError(
-          `Could not find transaction with ID: ${id} for user with ID: ${userId}`
-        );
+        throw new NotFoundError(`Could not find transaction with ID: ${id}`);
       }
 
-      this.logger.info(
-        `Found transaction with ID: ${id} for user with ID: ${userId}`
-      );
+      this.logger.info(`Found transaction with ID: ${id}`);
 
       return transaction;
     } catch (error) {
@@ -34,19 +30,22 @@ class TransactionService extends Service {
     }
   }
 
-  public async listTransactions(userId: string): Promise<Transaction[]> {
+  public async listTransactions(
+    userId: string,
+    accountId?: string
+  ): Promise<Transaction[]> {
     try {
       const transactions = await this.prisma.transaction.findMany({
         include: { entries: true },
-        where: { userId },
+        where: { userId, entries: { some: { account: accountId } } },
         orderBy: {
           createdAt: 'asc'
         }
       });
 
-      this.logger.info(
-        `Found ${transactions.length} transactions for user with ID: ${userId}`
-      );
+      this.logger.info(`Found ${transactions.length} transactions`, {
+        accountId
+      });
 
       return transactions;
     } catch (error) {
@@ -71,7 +70,7 @@ class TransactionService extends Service {
       });
 
       this.logger.info(
-        `Successfully created transaction with ID: ${createdTransaction.id} for user with ID: ${userId}`
+        `Successfully created transaction with ID: ${createdTransaction.id}`
       );
 
       return createdTransaction;
@@ -127,7 +126,7 @@ class TransactionService extends Service {
       });
 
       this.logger.info(
-        `Successfully deleted transaction with ID: ${deletedTransaction.id} for user with ID: ${userId}`
+        `Successfully deleted transaction with ID: ${deletedTransaction.id}`
       );
 
       return deletedTransaction;

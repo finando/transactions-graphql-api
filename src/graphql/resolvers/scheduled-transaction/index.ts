@@ -7,8 +7,9 @@ export const queries: ScheduledTransactionResolvers[Operation.QUERY] = {
     input: { id }
   }) => scheduledTransactionService.getScheduledTransaction(id, userId),
   listScheduledTransactions: async ({
-    context: { userId, scheduledTransactionService }
-  }) => scheduledTransactionService.listScheduledTransactions(userId)
+    context: { userId, scheduledTransactionService },
+    input: { accountId }
+  }) => scheduledTransactionService.listScheduledTransactions(userId, accountId)
 };
 
 export const mutations: ScheduledTransactionResolvers[Operation.MUTATION] = {

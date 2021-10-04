@@ -21,13 +21,11 @@ class ScheduledTransactionService extends Service {
 
       if (!scheduledTransaction || scheduledTransaction?.userId !== userId) {
         throw new NotFoundError(
-          `Could not find scheduled transaction with ID: ${id} for user with ID: ${userId}`
+          `Could not find scheduled transaction with ID: ${id}`
         );
       }
 
-      this.logger.info(
-        `Found scheduled transaction with ID: ${id} for user with ID: ${userId}`
-      );
+      this.logger.info(`Found scheduled transaction with ID: ${id}`);
 
       return scheduledTransaction;
     } catch (error) {
@@ -36,20 +34,22 @@ class ScheduledTransactionService extends Service {
   }
 
   public async listScheduledTransactions(
-    userId: string
+    userId: string,
+    accountId?: string
   ): Promise<ScheduledTransaction[]> {
     try {
       const scheduledTransactions =
         await this.prisma.scheduledTransaction.findMany({
           include: { entries: true },
-          where: { userId },
+          where: { userId, entries: { some: { account: accountId } } },
           orderBy: {
             createdAt: 'asc'
           }
         });
 
       this.logger.info(
-        `Found ${scheduledTransactions.length} scheduled transactions for user with ID: ${userId}`
+        `Found ${scheduledTransactions.length} scheduled transactions`,
+        { accountId }
       );
 
       return scheduledTransactions;
@@ -83,7 +83,7 @@ class ScheduledTransactionService extends Service {
         });
 
       this.logger.info(
-        `Successfully created scheduled transaction with ID: ${createdScheduledTransaction.id} for user with ID: ${userId}`
+        `Successfully created scheduled transaction with ID: ${createdScheduledTransaction.id}`
       );
 
       return createdScheduledTransaction;
@@ -125,7 +125,7 @@ class ScheduledTransactionService extends Service {
         });
 
       this.logger.info(
-        `Successfully updated scheduled transaction with ID: ${updatedScheduledTransaction.id} for user with ID: ${userId}`
+        `Successfully updated scheduled transaction with ID: ${updatedScheduledTransaction.id}`
       );
 
       return updatedScheduledTransaction;
@@ -148,7 +148,7 @@ class ScheduledTransactionService extends Service {
         });
 
       this.logger.info(
-        `Successfully deleted scheduled transaction with ID: ${deletedScheduledTransaction.id} for user with ID: ${userId}`
+        `Successfully deleted scheduled transaction with ID: ${deletedScheduledTransaction.id}`
       );
 
       return deletedScheduledTransaction;

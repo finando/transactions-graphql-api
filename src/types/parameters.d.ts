@@ -9,7 +9,9 @@ export interface GetTransactionParams {
   id: string;
 }
 
-export interface ListTransactionsParams {}
+export interface ListTransactionsParams {
+  accountId?: string;
+}
 
 export interface CreateTransactionParams {
   data: CreateTransactionInput;
@@ -28,7 +30,9 @@ export interface GetScheduledTransactionParams {
   id: string;
 }
 
-export interface ListScheduledTransactionsParams {}
+export interface ListScheduledTransactionsParams {
+  accountId?: string;
+}
 
 export interface CreateScheduledTransactionParams {
   data: CreateScheduledTransactionInput;

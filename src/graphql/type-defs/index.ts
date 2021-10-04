@@ -14,11 +14,11 @@ export default gql`
   extend type Query {
     getTransaction(id: ID!): Transaction
 
-    listTransactions: [Transaction!]!
+    listTransactions(accountId: ID): [Transaction!]!
 
     getScheduledTransaction(id: ID!): ScheduledTransaction
 
-    listScheduledTransactions: [ScheduledTransaction!]!
+    listScheduledTransactions(accountId: ID): [ScheduledTransaction!]!
   }
 
   extend type Mutation {
