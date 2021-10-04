@@ -1,13 +1,19 @@
 import type {
-  Transaction as TransactionDBO,
-  Entry as EntryDBO,
   Currency,
-  Tag
+  Tag,
+  Recurrence,
+  Entry as EntryDBO,
+  Transaction as TransactionDBO,
+  ScheduledTransaction as ScheduledTransactionDBO
 } from '@prisma/client';
 
 export interface Entry extends EntryDBO {}
 
 export interface Transaction extends TransactionDBO {
+  entries: Entry[];
+}
+
+export interface ScheduledTransaction extends ScheduledTransactionDBO {
   entries: Entry[];
 }
 
@@ -50,7 +56,24 @@ export interface UpdateTransactionInput {
   createdAt?: Date;
 }
 
+export interface CreateScheduledTransactionInput {
+  entries?: CreateEntryInput[];
+  recurrence?: Recurrence;
+  description?: string;
+  tags?: Tag[];
+  createdAt?: Date;
+}
+
+export interface UpdateScheduledTransactionInput {
+  entries?: UpdateEntryInput[];
+  recurrence?: Recurrence;
+  description?: string;
+  tags?: Tag[];
+  createdAt?: Date;
+}
+
 export type {
+  Entry as EntryDBO,
   Transaction as TransactionDBO,
-  Entry as EntryDBO
+  ScheduledTransaction as ScheduledTransactionDBO
 } from '@prisma/client';

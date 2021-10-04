@@ -15,6 +15,10 @@ export default gql`
     getTransaction(id: ID!): Transaction
 
     listTransactions: [Transaction!]!
+
+    getScheduledTransaction(id: ID!): ScheduledTransaction
+
+    listScheduledTransactions: [ScheduledTransaction!]!
   }
 
   extend type Mutation {
@@ -23,5 +27,16 @@ export default gql`
     updateTransaction(id: ID!, data: UpdateTransactionInput!): Transaction
 
     deleteTransaction(id: ID!): Transaction
+
+    createScheduledTransaction(
+      data: CreateScheduledTransactionInput!
+    ): ScheduledTransaction!
+
+    updateScheduledTransaction(
+      id: ID!
+      data: UpdateScheduledTransactionInput!
+    ): ScheduledTransaction
+
+    deleteScheduledTransaction(id: ID!): ScheduledTransaction
   }
 `;

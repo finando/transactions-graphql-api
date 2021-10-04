@@ -103,4 +103,11 @@ export default gql`
     TRANSFER_SAVINGS_RETIREMENT
     TRANSFER_SAVINGS_BSU
   }
+
+  enum Recurrence {
+    DAILY
+    WEEKLY
+    MONTHLY
+    ANNUALLY
+  }
 `;

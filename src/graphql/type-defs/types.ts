@@ -1,6 +1,14 @@
 import { gql } from 'apollo-server';
 
 export default gql`
+  type Entry @key(fields: "id") {
+    id: ID!
+    account: ID!
+    debit: NonNegativeInt!
+    credit: NonNegativeInt!
+    currency: Currency!
+  }
+
   type Transaction @key(fields: "id") {
     id: ID!
     entries: [Entry!]!
@@ -10,12 +18,14 @@ export default gql`
     updatedAt: DateTime!
   }
 
-  type Entry @key(fields: "id") {
+  type ScheduledTransaction @key(fields: "id") {
     id: ID!
-    account: ID!
-    debit: NonNegativeInt!
-    credit: NonNegativeInt!
-    currency: Currency!
+    entries: [Entry!]!
+    recurrence: Recurrence
+    description: String
+    tags: [Tag!]!
+    createdAt: DateTime!
+    updatedAt: DateTime!
   }
 
   extend type BudgetAccount @key(fields: "id") {

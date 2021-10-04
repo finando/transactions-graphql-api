@@ -59,7 +59,7 @@ class TransactionService extends Service {
     { entries = [], description, tags, createdAt }: CreateTransactionInput
   ): Promise<Transaction> {
     try {
-      const transaction = await this.prisma.transaction.create({
+      const createdTransaction = await this.prisma.transaction.create({
         include: { entries: true },
         data: {
           userId,
@@ -71,10 +71,10 @@ class TransactionService extends Service {
       });
 
       this.logger.info(
-        `Successfully created transaction with ID: ${transaction.id} for user with ID: ${userId}`
+        `Successfully created transaction with ID: ${createdTransaction.id} for user with ID: ${userId}`
       );
 
-      return transaction;
+      return createdTransaction;
     } catch (error) {
       throw this.handleError(error);
     }

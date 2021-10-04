@@ -29,4 +29,20 @@ export default gql`
     tags: [Tag!]
     createdAt: DateTime
   }
+
+  input CreateScheduledTransactionInput {
+    entries: [CreateEntryInput!]
+    recurrence: Recurrence
+    description: String
+    tags: [Tag!]
+    createdAt: DateTime!
+  }
+
+  input UpdateScheduledTransactionInput {
+    entries: [UpdateEntryInput!]
+    recurrence: Recurrence
+    description: String
+    tags: [Tag!]
+    createdAt: DateTime
+  }
 `;

@@ -1,11 +1,13 @@
 import type { GraphQLResolveInfo } from 'graphql';
 
 import TransactionService from '@app/services/transaction';
+import ScheduledTransactionService from '@app/services/scheduled-transaction';
 
 export interface Context {
   requestId: string;
   userId: string;
   transactionService: TransactionService;
+  scheduledTransactionService: ScheduledTransactionService;
 }
 
 interface Input<TRoot, TInput, TValue> {
