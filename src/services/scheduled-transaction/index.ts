@@ -156,6 +156,45 @@ class ScheduledTransactionService extends Service {
       throw this.handleError(error);
     }
   }
+
+  public async calculateFutureAccountBalance(
+    accountId: string,
+    date: Date
+  ): Promise<number> {
+    const [
+      {
+        _sum: { debit }
+      },
+      {
+        _sum: { credit }
+      }
+    ] = await this.prisma.$transaction([
+      this.prisma.entry.aggregate({
+        _sum: {
+          debit: true
+        },
+        where: {
+          account: accountId,
+          scheduledTransaction: {
+            createdAt: { lte: date }
+          }
+        }
+      }),
+      this.prisma.entry.aggregate({
+        _sum: {
+          credit: true
+        },
+        where: {
+          account: accountId,
+          scheduledTransaction: {
+            createdAt: { lte: date }
+          }
+        }
+      })
+    ]);
+
+    return (debit ?? 0) - (credit ?? 0);
+  }
 }
 
 export default ScheduledTransactionService;

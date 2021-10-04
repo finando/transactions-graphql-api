@@ -46,3 +46,7 @@ export interface UpdateScheduledTransactionParams {
 export interface DeleteScheduledTransactionParams {
   id: string;
 }
+
+export interface FutureBalanceParams {
+  date: Date;
+}

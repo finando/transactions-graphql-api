@@ -32,11 +32,13 @@ export default gql`
     id: ID! @external
     initialBalance: Int! @external
     balance: Int! @requires(fields: "initialBalance")
+    futureBalance(date: DateTime!): Int! @requires(fields: "initialBalance")
   }
 
   extend type TrackingAccount @key(fields: "id") {
     id: ID! @external
     initialBalance: Int! @external
     balance: Int! @requires(fields: "initialBalance")
+    futureBalance(date: DateTime!): Int! @requires(fields: "initialBalance")
   }
 `;
