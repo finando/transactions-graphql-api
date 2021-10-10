@@ -1,9 +1,12 @@
+import { RRule, Frequency } from 'rrule';
+
 import { Service } from '@app/utils/service';
 import type {
   ScheduledTransaction,
   CreateScheduledTransactionInput,
   UpdateScheduledTransactionInput
 } from '@app/types';
+import { Recurrence } from '@app/enums';
 
 import { NotFoundError } from '../../graphql/errors';
 
@@ -159,41 +162,72 @@ class ScheduledTransactionService extends Service {
 
   public async calculateFutureAccountBalance(
     accountId: string,
+    userId: string,
     date: Date
   ): Promise<number> {
-    const [
-      {
-        _sum: { debit }
-      },
-      {
-        _sum: { credit }
-      }
-    ] = await this.prisma.$transaction([
-      this.prisma.entry.aggregate({
-        _sum: {
-          debit: true
-        },
-        where: {
-          account: accountId,
-          scheduledTransaction: {
-            createdAt: { lte: date }
-          }
-        }
-      }),
-      this.prisma.entry.aggregate({
-        _sum: {
-          credit: true
-        },
-        where: {
-          account: accountId,
-          scheduledTransaction: {
-            createdAt: { lte: date }
-          }
-        }
-      })
-    ]);
+    return (await this.listScheduledTransactions(userId, accountId)).reduce(
+      (previous, { entries, createdAt, recurrence }) =>
+        previous +
+        entries.reduce(
+          (previous, { debit, credit }) =>
+            previous +
+            this.calculateRecurrenceMultiplier(createdAt, date, recurrence) *
+              (debit - credit),
+          0
+        ),
+      0
+    );
+  }
 
-    return (debit ?? 0) - (credit ?? 0);
+  private calculateRecurrenceMultiplier(
+    fromDate: Date,
+    toDate: Date,
+    recurrence: Recurrence | null
+  ): number {
+    const now = this.localDateToUtc(new Date());
+    const from = this.localDateToUtc(fromDate);
+    const to = this.localDateToUtc(toDate);
+
+    if (
+      to.getTime() < from.getTime() ||
+      to.getTime() <= now.getTime() ||
+      !recurrence
+    ) {
+      return 0;
+    }
+
+    return new RRule({
+      dtstart: from,
+      until: to,
+      freq: this.mapRecurrenceToFrequency(recurrence)
+    }).all(date => date.getTime() >= now.getTime()).length;
+  }
+
+  private mapRecurrenceToFrequency(recurrence: Recurrence): Frequency {
+    switch (recurrence) {
+      case Recurrence.DAILY:
+        return Frequency.DAILY;
+      case Recurrence.WEEKLY:
+        return Frequency.WEEKLY;
+      case Recurrence.MONTHLY:
+        return Frequency.MONTHLY;
+      case Recurrence.ANNUALLY:
+        return Frequency.YEARLY;
+    }
+  }
+
+  private localDateToUtc(date: Date) {
+    return new Date(
+      Date.UTC(
+        date.getFullYear(),
+        date.getMonth(),
+        date.getDate(),
+        date.getHours(),
+        date.getMinutes(),
+        date.getSeconds(),
+        date.getMilliseconds()
+      )
+    );
   }
 }
 

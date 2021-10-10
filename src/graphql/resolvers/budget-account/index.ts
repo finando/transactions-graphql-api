@@ -7,14 +7,18 @@ export const lookups: BudgetAccountResolvers[Operation.LOOKUP] = {
     root: { id, initialBalance }
   }) => transactionService.calculateAccountBalance(id, initialBalance),
   futureBalance: async ({
-    context: { transactionService, scheduledTransactionService },
+    context: { userId, transactionService, scheduledTransactionService },
     root: { id, initialBalance },
     input: { date }
   }) =>
     (
       await Promise.all([
         transactionService.calculateAccountBalance(id, initialBalance),
-        scheduledTransactionService.calculateFutureAccountBalance(id, date)
+        scheduledTransactionService.calculateFutureAccountBalance(
+          id,
+          userId,
+          date
+        )
       ])
     ).reduce((previous, current) => previous + current, 0)
 };
