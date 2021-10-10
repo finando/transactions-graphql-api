@@ -13,8 +13,10 @@ import type {
   UpdateScheduledTransactionParams,
   DeleteScheduledTransactionParams,
   FutureBalanceParams,
+  FutureBalancesParams,
   Transaction,
   ScheduledTransaction,
+  FutureBalance,
   BudgetAccountRootObject,
   TrackingAccountRootObject
 } from '.';
@@ -63,7 +65,12 @@ export interface BudgetAccountResolvers {
     balance: Resolver<unknown, number, BudgetAccountRootObject>;
     futureBalance: Resolver<
       FutureBalanceParams,
-      number,
+      FutureBalance,
+      BudgetAccountRootObject
+    >;
+    futureBalances: Resolver<
+      FutureBalancesParams,
+      FutureBalance[],
       BudgetAccountRootObject
     >;
   };
@@ -74,8 +81,13 @@ export interface TrackingAccountResolvers {
     balance: Resolver<unknown, number, TrackingAccountRootObject>;
     futureBalance: Resolver<
       FutureBalanceParams,
-      number,
+      FutureBalance,
       TrackingAccountRootObject
+    >;
+    futureBalances: Resolver<
+      FutureBalancesParams,
+      FutureBalance[],
+      BudgetAccountRootObject
     >;
   };
 }

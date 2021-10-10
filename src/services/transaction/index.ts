@@ -1,6 +1,10 @@
+import { RRule, Frequency } from 'rrule';
+
 import { Service } from '@app/utils/service';
+import { localDateToUtc } from '@app/utils/date';
 import type {
   Transaction,
+  FutureBalance,
   CreateTransactionInput,
   UpdateTransactionInput
 } from '@app/types';
@@ -136,8 +140,10 @@ class TransactionService extends Service {
   }
 
   public async calculateAccountBalance(
+    userId: string,
     accountId: string,
-    initialBalance: number
+    initialBalance: number,
+    date: Date = new Date()
   ): Promise<number> {
     const [
       {
@@ -151,17 +157,56 @@ class TransactionService extends Service {
         _sum: {
           debit: true
         },
-        where: { account: accountId }
+        where: {
+          account: accountId,
+          transaction: { userId, createdAt: { lte: date } }
+        }
       }),
       this.prisma.entry.aggregate({
         _sum: {
           credit: true
         },
-        where: { account: accountId }
+        where: {
+          account: accountId,
+          transaction: { userId, createdAt: { lte: date } }
+        }
       })
     ]);
 
     return (initialBalance ?? 0) + (debit ?? 0) - (credit ?? 0);
+  }
+
+  public async listFutureAccountBalances(
+    userId: string,
+    accountId: string,
+    initialBalance: number,
+    fromDate: Date,
+    toDate: Date
+  ): Promise<FutureBalance[]> {
+    const from = localDateToUtc(fromDate);
+    const to = localDateToUtc(toDate);
+
+    if (to.getTime() <= from.getTime()) {
+      return [];
+    }
+
+    return Promise.all(
+      new RRule({
+        dtstart: from,
+        until: to,
+        freq: Frequency.DAILY
+      })
+        .all()
+        .map(async date => ({
+          date,
+          balance: await this.calculateAccountBalance(
+            userId,
+            accountId,
+            initialBalance,
+            date
+          )
+        }))
+    );
   }
 }
 

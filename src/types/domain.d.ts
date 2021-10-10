@@ -17,6 +17,11 @@ export interface ScheduledTransaction extends ScheduledTransactionDBO {
   entries: Entry[];
 }
 
+export interface FutureBalance {
+  date: Date;
+  balance: number;
+}
+
 export interface BudgetAccountRootObject {
   id: string;
   initialBalance: number;

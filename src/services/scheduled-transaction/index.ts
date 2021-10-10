@@ -1,8 +1,10 @@
 import { RRule, Frequency } from 'rrule';
 
 import { Service } from '@app/utils/service';
+import { localDateToUtc } from '@app/utils/date';
 import type {
   ScheduledTransaction,
+  FutureBalance,
   CreateScheduledTransactionInput,
   UpdateScheduledTransactionInput
 } from '@app/types';
@@ -161,8 +163,8 @@ class ScheduledTransactionService extends Service {
   }
 
   public async calculateFutureAccountBalance(
-    accountId: string,
     userId: string,
+    accountId: string,
     date: Date
   ): Promise<number> {
     return (await this.listScheduledTransactions(userId, accountId)).reduce(
@@ -179,14 +181,45 @@ class ScheduledTransactionService extends Service {
     );
   }
 
+  public async listFutureAccountBalances(
+    userId: string,
+    accountId: string,
+    fromDate: Date,
+    toDate: Date
+  ): Promise<FutureBalance[]> {
+    const from = localDateToUtc(fromDate);
+    const to = localDateToUtc(toDate);
+
+    if (to.getTime() <= from.getTime()) {
+      return [];
+    }
+
+    return Promise.all(
+      new RRule({
+        dtstart: from,
+        until: to,
+        freq: Frequency.DAILY
+      })
+        .all()
+        .map(async date => ({
+          date,
+          balance: await this.calculateFutureAccountBalance(
+            userId,
+            accountId,
+            date
+          )
+        }))
+    );
+  }
+
   private calculateRecurrenceMultiplier(
     fromDate: Date,
     toDate: Date,
     recurrence: Recurrence | null
   ): number {
-    const now = this.localDateToUtc(new Date());
-    const from = this.localDateToUtc(fromDate);
-    const to = this.localDateToUtc(toDate);
+    const now = localDateToUtc(new Date());
+    const from = localDateToUtc(fromDate);
+    const to = localDateToUtc(toDate);
 
     if (
       to.getTime() < from.getTime() ||
@@ -214,20 +247,6 @@ class ScheduledTransactionService extends Service {
       case Recurrence.ANNUALLY:
         return Frequency.YEARLY;
     }
-  }
-
-  private localDateToUtc(date: Date) {
-    return new Date(
-      Date.UTC(
-        date.getFullYear(),
-        date.getMonth(),
-        date.getDate(),
-        date.getHours(),
-        date.getMinutes(),
-        date.getSeconds(),
-        date.getMilliseconds()
-      )
-    );
   }
 }
 
