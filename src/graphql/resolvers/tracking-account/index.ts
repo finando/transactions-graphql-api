@@ -16,8 +16,8 @@ export const lookups: TrackingAccountResolvers[Operation.LOOKUP] = {
       await Promise.all([
         transactionService.calculateAccountBalance(userId, id, initialBalance),
         scheduledTransactionService.calculateFutureAccountBalance(
-          id,
           userId,
+          id,
           to
         )
       ])
