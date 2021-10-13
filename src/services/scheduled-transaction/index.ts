@@ -171,10 +171,16 @@ class ScheduledTransactionService extends Service {
       (previous, { entries, createdAt, recurrence }) =>
         previous +
         entries.reduce(
-          (previous, { debit, credit }) =>
+          (previous, { account, debit, credit }) =>
             previous +
-            this.calculateRecurrenceMultiplier(createdAt, date, recurrence) *
-              (debit - credit),
+            (account === accountId
+              ? this.calculateRecurrenceMultiplier(
+                  createdAt,
+                  date,
+                  recurrence
+                ) *
+                (debit - credit)
+              : 0),
           0
         ),
       0
