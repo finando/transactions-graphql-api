@@ -1,7 +1,7 @@
 import type {
   Currency,
   Tag,
-  Recurrence,
+  Frequency,
   Entry as EntryDBO,
   Transaction as TransactionDBO,
   ScheduledTransaction as ScheduledTransactionDBO
@@ -63,7 +63,7 @@ export interface UpdateTransactionInput {
 
 export interface CreateScheduledTransactionInput {
   entries?: CreateEntryInput[];
-  recurrence?: Recurrence;
+  frequency?: Frequency;
   description?: string;
   tags?: Tag[];
   createdAt?: Date;
@@ -71,7 +71,7 @@ export interface CreateScheduledTransactionInput {
 
 export interface UpdateScheduledTransactionInput {
   entries?: UpdateEntryInput[];
-  recurrence?: Recurrence;
+  frequency?: Frequency;
   description?: string;
   tags?: Tag[];
   createdAt?: Date;

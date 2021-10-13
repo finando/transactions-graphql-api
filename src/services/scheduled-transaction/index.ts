@@ -1,6 +1,7 @@
-import { RRule, Frequency } from 'rrule';
+import { RRule } from 'rrule';
 
 import { Service } from '@app/utils/service';
+import { mapToRecurrenceFrequency } from '@app/utils/common';
 import { localDateToUtc } from '@app/utils/date';
 import type {
   ScheduledTransaction,
@@ -8,7 +9,7 @@ import type {
   CreateScheduledTransactionInput,
   UpdateScheduledTransactionInput
 } from '@app/types';
-import { Recurrence } from '@app/enums';
+import { Frequency } from '@app/enums';
 
 import { NotFoundError } from '../../graphql/errors';
 
@@ -67,7 +68,7 @@ class ScheduledTransactionService extends Service {
     userId: string,
     {
       entries = [],
-      recurrence,
+      frequency,
       description,
       tags,
       createdAt
@@ -80,7 +81,7 @@ class ScheduledTransactionService extends Service {
           data: {
             userId,
             entries: { createMany: { data: entries } },
-            recurrence,
+            frequency,
             description,
             tags,
             createdAt
@@ -102,7 +103,7 @@ class ScheduledTransactionService extends Service {
     userId: string,
     {
       entries,
-      recurrence,
+      frequency,
       description,
       tags,
       createdAt
@@ -122,7 +123,7 @@ class ScheduledTransactionService extends Service {
                 where: { id: entryId, transactionId: id }
               }))
             },
-            recurrence,
+            frequency,
             description,
             tags,
             createdAt
@@ -168,17 +169,13 @@ class ScheduledTransactionService extends Service {
     date: Date
   ): Promise<number> {
     return (await this.listScheduledTransactions(userId, accountId)).reduce(
-      (previous, { entries, createdAt, recurrence }) =>
+      (previous, { entries, createdAt, frequency }) =>
         previous +
         entries.reduce(
           (previous, { account, debit, credit }) =>
             previous +
             (account === accountId
-              ? this.calculateRecurrenceMultiplier(
-                  createdAt,
-                  date,
-                  recurrence
-                ) *
+              ? this.calculateFrequencyMultiplier(createdAt, date, frequency) *
                 (debit - credit)
               : 0),
           0
@@ -191,7 +188,8 @@ class ScheduledTransactionService extends Service {
     userId: string,
     accountId: string,
     fromDate: Date,
-    toDate: Date
+    toDate: Date,
+    frequency: Frequency = Frequency.DAILY
   ): Promise<FutureBalance[]> {
     const from = localDateToUtc(fromDate);
     const to = localDateToUtc(toDate);
@@ -204,7 +202,7 @@ class ScheduledTransactionService extends Service {
       new RRule({
         dtstart: from,
         until: to,
-        freq: Frequency.DAILY
+        freq: mapToRecurrenceFrequency(frequency)
       })
         .all()
         .map(async date => ({
@@ -218,10 +216,10 @@ class ScheduledTransactionService extends Service {
     );
   }
 
-  private calculateRecurrenceMultiplier(
+  private calculateFrequencyMultiplier(
     fromDate: Date,
     toDate: Date,
-    recurrence: Recurrence | null
+    frequency: Frequency | null
   ): number {
     const now = localDateToUtc(new Date());
     const from = localDateToUtc(fromDate);
@@ -230,7 +228,7 @@ class ScheduledTransactionService extends Service {
     if (
       to.getTime() < from.getTime() ||
       to.getTime() <= now.getTime() ||
-      !recurrence
+      !frequency
     ) {
       return 0;
     }
@@ -238,21 +236,8 @@ class ScheduledTransactionService extends Service {
     return new RRule({
       dtstart: from,
       until: to,
-      freq: this.mapRecurrenceToFrequency(recurrence)
+      freq: mapToRecurrenceFrequency(frequency)
     }).all(date => date.getTime() >= now.getTime()).length;
-  }
-
-  private mapRecurrenceToFrequency(recurrence: Recurrence): Frequency {
-    switch (recurrence) {
-      case Recurrence.DAILY:
-        return Frequency.DAILY;
-      case Recurrence.WEEKLY:
-        return Frequency.WEEKLY;
-      case Recurrence.MONTHLY:
-        return Frequency.MONTHLY;
-      case Recurrence.ANNUALLY:
-        return Frequency.YEARLY;
-    }
   }
 }
 

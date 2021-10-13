@@ -32,7 +32,7 @@ export default gql`
 
   input CreateScheduledTransactionInput {
     entries: [CreateEntryInput!]
-    recurrence: Recurrence
+    frequency: Frequency
     description: String
     tags: [Tag!]
     createdAt: DateTime!
@@ -40,7 +40,7 @@ export default gql`
 
   input UpdateScheduledTransactionInput {
     entries: [UpdateEntryInput!]
-    recurrence: Recurrence
+    frequenct: Frequency
     description: String
     tags: [Tag!]
     createdAt: DateTime

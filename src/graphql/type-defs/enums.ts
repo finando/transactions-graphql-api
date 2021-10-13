@@ -104,7 +104,7 @@ export default gql`
     TRANSFER_SAVINGS_BSU
   }
 
-  enum Recurrence {
+  enum Frequency {
     DAILY
     WEEKLY
     MONTHLY

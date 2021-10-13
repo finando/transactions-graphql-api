@@ -21,7 +21,7 @@ export default gql`
   type ScheduledTransaction @key(fields: "id") {
     id: ID!
     entries: [Entry!]!
-    recurrence: Recurrence
+    frequency: Frequency
     description: String
     tags: [Tag!]!
     createdAt: DateTime!
@@ -42,6 +42,7 @@ export default gql`
     futureBalances(
       from: DateTime!
       to: DateTime!
+      frequency: Frequency
       currency: Currency!
     ): [FutureBalance!]! @requires(fields: "initialBalance")
   }
@@ -55,6 +56,7 @@ export default gql`
     futureBalances(
       from: DateTime!
       to: DateTime!
+      frequency: Frequency
       currency: Currency!
     ): [FutureBalance!]! @requires(fields: "initialBalance")
   }

@@ -1,6 +1,7 @@
-import { RRule, Frequency } from 'rrule';
+import { RRule } from 'rrule';
 
 import { Service } from '@app/utils/service';
+import { mapToRecurrenceFrequency } from '@app/utils/common';
 import { localDateToUtc } from '@app/utils/date';
 import type {
   Transaction,
@@ -8,6 +9,7 @@ import type {
   CreateTransactionInput,
   UpdateTransactionInput
 } from '@app/types';
+import { Frequency } from '@app/enums';
 
 import { NotFoundError } from '../../graphql/errors';
 
@@ -181,7 +183,8 @@ class TransactionService extends Service {
     accountId: string,
     initialBalance: number,
     fromDate: Date,
-    toDate: Date
+    toDate: Date,
+    frequency: Frequency = Frequency.DAILY
   ): Promise<FutureBalance[]> {
     const from = localDateToUtc(fromDate);
     const to = localDateToUtc(toDate);
@@ -194,7 +197,7 @@ class TransactionService extends Service {
       new RRule({
         dtstart: from,
         until: to,
-        freq: Frequency.DAILY
+        freq: mapToRecurrenceFrequency(frequency)
       })
         .all()
         .map(async date => ({

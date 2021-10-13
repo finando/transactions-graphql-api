@@ -1,4 +1,5 @@
 import type {
+  Frequency,
   CreateTransactionInput,
   UpdateTransactionInput,
   CreateScheduledTransactionInput,
@@ -55,5 +56,6 @@ export interface FutureBalanceParams {
 export interface FutureBalancesParams {
   from: Date;
   to: Date;
+  frequency?: Frequency;
   currency: Currency;
 }

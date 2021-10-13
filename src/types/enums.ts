@@ -9,4 +9,4 @@ export enum Operation {
   LOOKUP = 'lookup'
 }
 
-export { Currency, Recurrence } from '@prisma/client';
+export { Currency, Frequency } from '@prisma/client';

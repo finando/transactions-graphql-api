@@ -1,4 +1,7 @@
 import type { GraphQLFieldResolver, GraphQLTypeResolver } from 'graphql';
+import { Frequency as RecurrenceFrequency } from 'rrule';
+
+import { Frequency } from '@app/enums';
 
 const resolve =
   (
@@ -51,4 +54,19 @@ export const validateEnv = <T>(env: T): T => {
   Object.entries(env).forEach(([key, value]) => assertIsDefined(key, value));
 
   return env;
+};
+
+export const mapToRecurrenceFrequency = (
+  frequency: Frequency
+): RecurrenceFrequency => {
+  switch (frequency) {
+    case Frequency.DAILY:
+      return RecurrenceFrequency.DAILY;
+    case Frequency.WEEKLY:
+      return RecurrenceFrequency.WEEKLY;
+    case Frequency.MONTHLY:
+      return RecurrenceFrequency.MONTHLY;
+    case Frequency.ANNUALLY:
+      return RecurrenceFrequency.YEARLY;
+  }
 };
