@@ -121,6 +121,12 @@ enum Frequency {
   ANNUALLY
 }
 
+enum TransactionStatus {
+  CLEARED
+  UNCLEARED
+  RECONCILED
+}
+
 model Entry {
   id                     String                @id @default(cuid())
   account                String
@@ -137,6 +143,7 @@ model Transaction {
   id          String   @id @default(cuid())
   userId      String
   entries     Entry[]
+  status      TransactionStatus @default(CLEARED)
   description String?
   tags        Tag[]
   createdAt   DateTime @default(now())
@@ -147,6 +154,7 @@ model ScheduledTransaction {
   id          String     @id @default(cuid())
   userId      String
   entries     Entry[]
+  status      TransactionStatus @default(UNCLEARED)
   frequency   Frequency?
   description String?
   tags        Tag[]
