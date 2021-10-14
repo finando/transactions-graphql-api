@@ -104,6 +104,12 @@ export default gql`
     TRANSFER_SAVINGS_BSU
   }
 
+  enum TransactionStatus {
+    CLEARED
+    UNCLEARED
+    RECONCILED
+  }
+
   enum Frequency {
     DAILY
     WEEKLY

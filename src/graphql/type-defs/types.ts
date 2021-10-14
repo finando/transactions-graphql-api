@@ -12,6 +12,7 @@ export default gql`
   type Transaction @key(fields: "id") {
     id: ID!
     entries: [Entry!]!
+    status: TransactionStatus!
     description: String
     tags: [Tag!]!
     createdAt: DateTime!
@@ -21,6 +22,7 @@ export default gql`
   type ScheduledTransaction @key(fields: "id") {
     id: ID!
     entries: [Entry!]!
+    status: TransactionStatus!
     frequency: Frequency
     description: String
     tags: [Tag!]!
