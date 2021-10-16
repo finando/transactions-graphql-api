@@ -5,7 +5,12 @@ export const lookups: TrackingAccountResolvers[Operation.LOOKUP] = {
   balance: async ({
     context: { userId, transactionService },
     root: { id, initialBalance }
-  }) => transactionService.calculateAccountBalance(userId, id, initialBalance),
+  }) =>
+    transactionService.calculateFutureAccountBalance(
+      userId,
+      id,
+      initialBalance
+    ),
   futureBalance: async ({
     context: { userId, transactionService, scheduledTransactionService },
     root: { id, initialBalance },
@@ -14,7 +19,11 @@ export const lookups: TrackingAccountResolvers[Operation.LOOKUP] = {
     date: to,
     balance: (
       await Promise.all([
-        transactionService.calculateAccountBalance(userId, id, initialBalance),
+        transactionService.calculateFutureAccountBalance(
+          userId,
+          id,
+          initialBalance
+        ),
         scheduledTransactionService.calculateFutureAccountBalance(
           userId,
           id,

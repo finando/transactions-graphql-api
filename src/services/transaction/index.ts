@@ -141,7 +141,7 @@ class TransactionService extends Service {
     }
   }
 
-  public async calculateAccountBalance(
+  public async calculateFutureAccountBalance(
     userId: string,
     accountId: string,
     initialBalance: number,
@@ -202,7 +202,7 @@ class TransactionService extends Service {
         .all()
         .map(async date => ({
           date,
-          balance: await this.calculateAccountBalance(
+          balance: await this.calculateFutureAccountBalance(
             userId,
             accountId,
             initialBalance,
