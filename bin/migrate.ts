@@ -331,10 +331,11 @@ const transactionTags = {
     debit: [Tags.INCOME, Tags.INCOME_REIMBURSEMENT],
     credit: [Tags.EXPENSE, Tags.EXPENSE_MISCELLANEOUS]
   },
-  'Transfer to BSU account': {
-    debit: [Tags.INCOME, Tags.INCOME_TRANSFER],
-    credit: [Tags.TRANSFER, Tags.TRANSFER_SAVINGS, Tags.TRANSFER_SAVINGS_BSU]
-  },
+  'Transfer to BSU account': [
+    Tags.TRANSFER,
+    Tags.TRANSFER_SAVINGS,
+    Tags.TRANSFER_SAVINGS_BSU
+  ],
   'Transfer from checking account': [Tags.INCOME, Tags.INCOME_TRANSFER],
   'TV streaming app': [
     Tags.EXPENSE,
