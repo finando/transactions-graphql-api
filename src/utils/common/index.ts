@@ -1,6 +1,7 @@
 import type { GraphQLFieldResolver, GraphQLTypeResolver } from 'graphql';
-import { Frequency as RecurrenceFrequency } from 'rrule';
+import { RRule, Frequency as RecurrenceFrequency } from 'rrule';
 
+import { localDateToUtc } from '@app/utils/date';
 import { Frequency } from '@app/enums';
 
 const resolve =
@@ -69,4 +70,28 @@ export const mapToRecurrenceFrequency = (
     case Frequency.ANNUALLY:
       return RecurrenceFrequency.YEARLY;
   }
+};
+
+export const calculateFrequencyMultiplier = (
+  fromDate: Date,
+  toDate: Date,
+  frequency: Frequency | null
+): number => {
+  const now = localDateToUtc(new Date());
+  const from = localDateToUtc(fromDate);
+  const to = localDateToUtc(toDate);
+
+  if (
+    to.getTime() < from.getTime() ||
+    to.getTime() <= now.getTime() ||
+    !frequency
+  ) {
+    return 0;
+  }
+
+  return new RRule({
+    dtstart: from,
+    until: to,
+    freq: mapToRecurrenceFrequency(frequency)
+  }).all(date => date.getTime() >= now.getTime()).length;
 };
