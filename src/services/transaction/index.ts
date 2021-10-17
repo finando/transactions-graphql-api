@@ -36,7 +36,7 @@ class TransactionService extends Service {
 
   public async listTransactions(
     userId: string,
-    accountId: string,
+    accountId?: string,
     fromDate?: Date,
     toDate?: Date
   ): Promise<Transaction[]> {
