@@ -35,9 +35,19 @@ export default gql`
     balance: Int!
   }
 
+  type Balance {
+    date: DateTime!
+    currency: Currency!
+    cleared: Int!
+    uncleared: Int!
+    running: Int!
+  }
+
   extend type BudgetAccount @key(fields: "id") {
     id: ID! @external
     initialBalance: Int! @external
+    newBalance(to: DateTime, currency: Currency): Balance!
+      @requires(fields: "initialBalance")
     balance: Int! @requires(fields: "initialBalance")
     futureBalance(to: DateTime!, currency: Currency!): FutureBalance!
       @requires(fields: "initialBalance")
@@ -52,6 +62,8 @@ export default gql`
   extend type TrackingAccount @key(fields: "id") {
     id: ID! @external
     initialBalance: Int! @external
+    newBalance(to: DateTime, currency: Currency): Balance!
+      @requires(fields: "initialBalance")
     balance: Int! @requires(fields: "initialBalance")
     futureBalance(to: DateTime!, currency: Currency!): FutureBalance!
       @requires(fields: "initialBalance")

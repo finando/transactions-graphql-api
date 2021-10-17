@@ -7,10 +7,11 @@ import { localDateToUtc, getRecurringScheduledDates } from '@app/utils/date';
 import type {
   ScheduledTransaction,
   FutureBalance,
+  Balance,
   CreateScheduledTransactionInput,
   UpdateScheduledTransactionInput
 } from '@app/types';
-import { Frequency } from '@app/enums';
+import { Frequency, Currency } from '@app/enums';
 
 import { NotFoundError } from '../../graphql/errors';
 
@@ -43,7 +44,7 @@ class ScheduledTransactionService extends Service {
   public async listScheduledTransactions(
     userId: string,
     accountId?: string,
-    toDate: Date = new Date()
+    toDate?: Date
   ): Promise<ScheduledTransaction[]> {
     try {
       const scheduledTransactions =
@@ -169,6 +170,41 @@ class ScheduledTransactionService extends Service {
     }
   }
 
+  public async calculateNewAccountBalance(
+    userId: string,
+    accountId: string,
+    toDate: Date,
+    transactions?: ScheduledTransaction[],
+    currency: Currency = Currency.NOK
+  ): Promise<Balance> {
+    const unclearedBalance = (
+      Array.isArray(transactions)
+        ? transactions
+        : await this.listScheduledTransactions(userId, accountId, toDate)
+    ).reduce(
+      (previous, { entries, createdAt, frequency }) =>
+        previous +
+        entries.reduce(
+          (previous, { account, debit, credit }) =>
+            previous +
+            (account === accountId
+              ? calculateFrequencyMultiplier(createdAt, toDate, frequency) *
+                (debit - credit)
+              : 0),
+          0
+        ),
+      0
+    );
+
+    return {
+      date: toDate,
+      currency,
+      cleared: 0,
+      uncleared: unclearedBalance,
+      running: unclearedBalance
+    };
+  }
+
   public async calculateFutureAccountBalance(
     userId: string,
     accountId: string,
@@ -178,7 +214,7 @@ class ScheduledTransactionService extends Service {
     return (
       Array.isArray(transactions)
         ? transactions
-        : await this.listScheduledTransactions(userId, accountId)
+        : await this.listScheduledTransactions(userId, accountId, toDate)
     ).reduce(
       (previous, { entries, createdAt, frequency }) =>
         previous +

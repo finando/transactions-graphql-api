@@ -23,6 +23,14 @@ export interface FutureBalance {
   isScheduled?: boolean;
 }
 
+export interface Balance {
+  date: Date;
+  currency: Currency;
+  cleared: number;
+  uncleared: number;
+  running: number;
+}
+
 export interface BudgetAccountRootObject {
   id: string;
   initialBalance: number;

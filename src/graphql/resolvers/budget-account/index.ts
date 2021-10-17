@@ -1,7 +1,36 @@
-import type { BudgetAccountResolvers, FutureBalance } from '@app/types';
-import { Operation } from '@app/enums';
+import type {
+  BudgetAccountResolvers,
+  FutureBalance,
+  Balance
+} from '@app/types';
+import { Operation, Currency } from '@app/enums';
 
 export const lookups: BudgetAccountResolvers[Operation.LOOKUP] = {
+  newBalance: async ({
+    context: { userId, transactionService, scheduledTransactionService },
+    root: { id, initialBalance },
+    input: { to, currency }
+  }) =>
+    (
+      await Promise.all([
+        transactionService.calculateNewAccountBalance(userId, id, to),
+        scheduledTransactionService.calculateNewAccountBalance(userId, id, to)
+      ])
+    ).reduce(
+      (previous, { cleared, uncleared, running }) => ({
+        ...previous,
+        cleared: previous.cleared + cleared,
+        uncleared: previous.uncleared + uncleared,
+        running: previous.running + running
+      }),
+      {
+        date: to ?? new Date(),
+        currency: currency ?? Currency.NOK,
+        cleared: initialBalance ?? 0,
+        uncleared: 0,
+        running: 0
+      } as Balance
+    ),
   balance: async ({
     context: { userId, transactionService },
     root: { id, initialBalance }

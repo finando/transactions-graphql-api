@@ -1,4 +1,5 @@
 import type {
+  Currency,
   Frequency,
   CreateTransactionInput,
   UpdateTransactionInput,
@@ -46,6 +47,11 @@ export interface UpdateScheduledTransactionParams {
 
 export interface DeleteScheduledTransactionParams {
   id: string;
+}
+
+export interface BalanceParams {
+  to: Date;
+  currency: Currency;
 }
 
 export interface FutureBalanceParams {

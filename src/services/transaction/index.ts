@@ -3,11 +3,12 @@ import { mapToRecurrenceFrequency } from '@app/utils/common';
 import { localDateToUtc, getRecurringDates } from '@app/utils/date';
 import type {
   Transaction,
+  Balance,
   FutureBalance,
   CreateTransactionInput,
   UpdateTransactionInput
 } from '@app/types';
-import { Frequency } from '@app/enums';
+import { Frequency, Currency, TransactionStatus } from '@app/enums';
 
 import { NotFoundError } from '../../graphql/errors';
 
@@ -207,6 +208,97 @@ class TransactionService extends Service {
         )
       }))
     );
+  }
+
+  public async calculateNewAccountBalance(
+    userId: string,
+    accountId: string,
+    toDate: Date = new Date(),
+    currency: Currency = Currency.NOK
+  ): Promise<Balance> {
+    const [
+      {
+        _sum: { debit: clearedAndReconciledDebit }
+      },
+      {
+        _sum: { credit: clearedAndReconciledCredit }
+      },
+      {
+        _sum: { debit: unclearedDebit }
+      },
+      {
+        _sum: { credit: unclearedCredit }
+      }
+    ] = await this.prisma.$transaction([
+      this.prisma.entry.aggregate({
+        _sum: {
+          debit: true
+        },
+        where: {
+          account: accountId,
+          transaction: {
+            userId,
+            createdAt: { lte: toDate },
+            status: {
+              in: [TransactionStatus.CLEARED, TransactionStatus.RECONCILED]
+            }
+          }
+        }
+      }),
+      this.prisma.entry.aggregate({
+        _sum: {
+          credit: true
+        },
+        where: {
+          account: accountId,
+          transaction: {
+            userId,
+            createdAt: { lte: toDate },
+            status: {
+              in: [TransactionStatus.CLEARED, TransactionStatus.RECONCILED]
+            }
+          }
+        }
+      }),
+      this.prisma.entry.aggregate({
+        _sum: {
+          debit: true
+        },
+        where: {
+          account: accountId,
+          transaction: {
+            userId,
+            createdAt: { lte: toDate },
+            status: TransactionStatus.UNCLEARED
+          }
+        }
+      }),
+      this.prisma.entry.aggregate({
+        _sum: {
+          credit: true
+        },
+        where: {
+          account: accountId,
+          transaction: {
+            userId,
+            createdAt: { lte: toDate },
+            status: TransactionStatus.UNCLEARED
+          }
+        }
+      })
+    ]);
+
+    const clearedBalance =
+      (clearedAndReconciledDebit ?? 0) - (clearedAndReconciledCredit ?? 0);
+    const unclearedBalance = (unclearedDebit ?? 0) - (unclearedCredit ?? 0);
+
+    return {
+      date: toDate,
+      currency,
+      cleared: clearedBalance,
+      uncleared: unclearedBalance,
+      running: clearedBalance + unclearedBalance
+    };
   }
 
   private async calculateAccountBalance(
