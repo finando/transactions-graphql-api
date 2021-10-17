@@ -508,10 +508,7 @@ const transactionTags = {
     Tags.EXPENSE_PERSONAL_CARE,
     Tags.EXPENSE_PERSONAL_CARE_SHOES
   ],
-  'Capgemini Savings Scheme': {
-    debit: [Tags.INCOME, Tags.INCOME_TRANSFER],
-    credit: [Tags.TRANSFER, Tags.TRANSFER_INVESTMENTS]
-  },
+  'Capgemini Savings Scheme': [Tags.TRANSFER, Tags.TRANSFER_INVESTMENTS],
   'Razor blade': [
     Tags.EXPENSE,
     Tags.EXPENSE_PERSONAL_CARE,
@@ -742,6 +739,8 @@ const transactions = Object.values(rows)
 Object.values(transactions).filter(({ tags, entries, ...rest }) => {
   if (
     (tags.includes(Tags.INCOME) && tags.includes(Tags.EXPENSE)) ||
+    (tags.includes(Tags.INCOME) && tags.includes(Tags.TRANSFER)) ||
+    (tags.includes(Tags.EXPENSE) && tags.includes(Tags.TRANSFER)) ||
     entries.some(({ debit, credit }) => isNaN(debit) || isNaN(credit))
   ) {
     console.error('Bad transaction', {
