@@ -31,7 +31,7 @@ export const lookups: TrackingAccountResolvers[Operation.LOOKUP] = {
         running: 0
       } as Balance
     ),
-  futureBalances: async ({
+  balances: async ({
     context: { userId, transactionService, scheduledTransactionService },
     root: { id, initialBalance },
     input: { from, to, frequency }

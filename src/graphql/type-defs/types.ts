@@ -48,7 +48,7 @@ export default gql`
     initialBalance: Int! @external
     balance(to: DateTime, currency: Currency): Balance!
       @requires(fields: "initialBalance")
-    futureBalances(
+    balances(
       from: DateTime!
       to: DateTime!
       frequency: Frequency
@@ -61,7 +61,7 @@ export default gql`
     initialBalance: Int! @external
     balance(to: DateTime, currency: Currency): Balance!
       @requires(fields: "initialBalance")
-    futureBalances(
+    balances(
       from: DateTime!
       to: DateTime!
       frequency: Frequency

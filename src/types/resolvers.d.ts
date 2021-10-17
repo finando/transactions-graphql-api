@@ -64,7 +64,7 @@ export interface ScheduledTransactionResolvers {
 export interface BudgetAccountResolvers {
   [Operation.LOOKUP]: {
     balance: Resolver<BalanceParams, Balance, BudgetAccountRootObject>;
-    futureBalances: Resolver<
+    balances: Resolver<
       FutureBalancesParams,
       FutureBalance[],
       BudgetAccountRootObject
@@ -75,7 +75,7 @@ export interface BudgetAccountResolvers {
 export interface TrackingAccountResolvers {
   [Operation.LOOKUP]: {
     balance: Resolver<BalanceParams, Balance, TrackingAccountRootObject>;
-    futureBalances: Resolver<
+    balances: Resolver<
       FutureBalancesParams,
       FutureBalance[],
       BudgetAccountRootObject
