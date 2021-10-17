@@ -50,8 +50,8 @@ export interface DeleteScheduledTransactionParams {
 }
 
 export interface BalanceParams {
-  to: Date;
-  currency: Currency;
+  to?: Date;
+  currency?: Currency;
 }
 
 export interface FutureBalancesParams {

@@ -9,7 +9,7 @@ export const lookups: TrackingAccountResolvers[Operation.LOOKUP] = {
   balance: async ({
     context: { userId, transactionService, scheduledTransactionService },
     root: { id, initialBalance },
-    input: { to, currency }
+    input: { to = new Date(), currency }
   }) =>
     (
       await Promise.all([
@@ -24,7 +24,7 @@ export const lookups: TrackingAccountResolvers[Operation.LOOKUP] = {
         running: previous.running + running
       }),
       {
-        date: to ?? new Date(),
+        date: to,
         currency: currency ?? Currency.NOK,
         cleared: initialBalance ?? 0,
         uncleared: 0,
