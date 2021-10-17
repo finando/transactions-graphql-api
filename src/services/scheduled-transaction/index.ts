@@ -170,7 +170,7 @@ class ScheduledTransactionService extends Service {
     }
   }
 
-  public async calculateNewAccountBalance(
+  public async calculateAccountBalance(
     userId: string,
     accountId: string,
     toDate: Date,

@@ -54,11 +54,6 @@ export interface BalanceParams {
   currency: Currency;
 }
 
-export interface FutureBalanceParams {
-  to: Date;
-  currency: Currency;
-}
-
 export interface FutureBalancesParams {
   from: Date;
   to: Date;

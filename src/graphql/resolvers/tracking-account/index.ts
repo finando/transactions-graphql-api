@@ -6,15 +6,15 @@ import type {
 import { Operation, Currency } from '@app/enums';
 
 export const lookups: TrackingAccountResolvers[Operation.LOOKUP] = {
-  newBalance: async ({
+  balance: async ({
     context: { userId, transactionService, scheduledTransactionService },
     root: { id, initialBalance },
     input: { to, currency }
   }) =>
     (
       await Promise.all([
-        transactionService.calculateNewAccountBalance(userId, id, to),
-        scheduledTransactionService.calculateNewAccountBalance(userId, id, to)
+        transactionService.calculateAccountBalance(userId, id, to),
+        scheduledTransactionService.calculateAccountBalance(userId, id, to)
       ])
     ).reduce(
       (previous, { cleared, uncleared, running }) => ({
@@ -31,36 +31,6 @@ export const lookups: TrackingAccountResolvers[Operation.LOOKUP] = {
         running: 0
       } as Balance
     ),
-  balance: async ({
-    context: { userId, transactionService },
-    root: { id, initialBalance }
-  }) =>
-    transactionService.calculateFutureAccountBalance(
-      userId,
-      id,
-      initialBalance
-    ),
-  futureBalance: async ({
-    context: { userId, transactionService, scheduledTransactionService },
-    root: { id, initialBalance },
-    input: { to }
-  }) => ({
-    date: to,
-    balance: (
-      await Promise.all([
-        transactionService.calculateFutureAccountBalance(
-          userId,
-          id,
-          initialBalance
-        ),
-        scheduledTransactionService.calculateFutureAccountBalance(
-          userId,
-          id,
-          to
-        )
-      ])
-    ).reduce((previous, current) => previous + current, 0)
-  }),
   futureBalances: async ({
     context: { userId, transactionService, scheduledTransactionService },
     root: { id, initialBalance },
@@ -72,7 +42,6 @@ export const lookups: TrackingAccountResolvers[Operation.LOOKUP] = {
           transactionService.listFutureAccountBalances(
             userId,
             id,
-            initialBalance,
             from,
             to,
             frequency
@@ -107,5 +76,7 @@ export const lookups: TrackingAccountResolvers[Operation.LOOKUP] = {
           }),
           {} as Record<number, FutureBalance>
         )
-    ).sort(({ date: a }, { date: b }) => a.getTime() - b.getTime())
+    )
+      .sort(({ date: a }, { date: b }) => a.getTime() - b.getTime())
+      .map(({ date, balance }) => ({ date, balance: initialBalance + balance }))
 };

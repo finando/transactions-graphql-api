@@ -146,32 +146,9 @@ class TransactionService extends Service {
     }
   }
 
-  public async calculateFutureAccountBalance(
-    userId: string,
-    accountId: string,
-    initialBalance: number,
-    transactions?: Transaction[]
-  ): Promise<number> {
-    return (
-      Array.isArray(transactions)
-        ? transactions
-        : await this.listTransactions(userId, accountId)
-    ).reduce(
-      (previous, { entries }) =>
-        previous +
-        entries.reduce(
-          (previous, { account, debit, credit }) =>
-            previous + (account === accountId ? debit - credit : 0),
-          0
-        ),
-      initialBalance
-    );
-  }
-
   public async listFutureAccountBalances(
     userId: string,
     accountId: string,
-    initialBalance: number,
     fromDate: Date,
     toDate: Date,
     frequency: Frequency = Frequency.DAILY
@@ -183,8 +160,8 @@ class TransactionService extends Service {
       return [];
     }
 
-    const [balance, transactions] = await Promise.all([
-      this.calculateAccountBalance(userId, accountId, initialBalance, fromDate),
+    const [{ running: balance }, transactions] = await Promise.all([
+      this.calculateAccountBalance(userId, accountId, fromDate),
       this.listTransactions(userId, accountId, fromDate, toDate)
     ]);
 
@@ -198,19 +175,19 @@ class TransactionService extends Service {
     return Promise.all(
       dates.map(async date => ({
         date,
-        balance: await this.calculateFutureAccountBalance(
-          userId,
-          accountId,
-          balance,
-          transactions.filter(
-            ({ createdAt }) => createdAt.getTime() <= date.getTime()
-          )
-        )
+        balance:
+          (await this.calculateFutureAccountBalance(
+            userId,
+            accountId,
+            transactions.filter(
+              ({ createdAt }) => createdAt.getTime() <= date.getTime()
+            )
+          )) + balance
       }))
     );
   }
 
-  public async calculateNewAccountBalance(
+  public async calculateAccountBalance(
     userId: string,
     accountId: string,
     toDate: Date = new Date(),
@@ -301,41 +278,25 @@ class TransactionService extends Service {
     };
   }
 
-  private async calculateAccountBalance(
+  private async calculateFutureAccountBalance(
     userId: string,
     accountId: string,
-    initialBalance: number,
-    date: Date = new Date()
+    transactions?: Transaction[]
   ): Promise<number> {
-    const [
-      {
-        _sum: { debit }
-      },
-      {
-        _sum: { credit }
-      }
-    ] = await this.prisma.$transaction([
-      this.prisma.entry.aggregate({
-        _sum: {
-          debit: true
-        },
-        where: {
-          account: accountId,
-          transaction: { userId, createdAt: { lte: date } }
-        }
-      }),
-      this.prisma.entry.aggregate({
-        _sum: {
-          credit: true
-        },
-        where: {
-          account: accountId,
-          transaction: { userId, createdAt: { lte: date } }
-        }
-      })
-    ]);
-
-    return (initialBalance ?? 0) + (debit ?? 0) - (credit ?? 0);
+    return (
+      Array.isArray(transactions)
+        ? transactions
+        : await this.listTransactions(userId, accountId)
+    ).reduce(
+      (previous, { entries }) =>
+        previous +
+        entries.reduce(
+          (previous, { account, debit, credit }) =>
+            previous + (account === accountId ? debit - credit : 0),
+          0
+        ),
+      0
+    );
   }
 }
 
