@@ -787,8 +787,22 @@ if (!processArguments.includes('--dry')) {
       try {
         const prisma = new PrismaClient();
 
-        const createdTransactions = await prisma.$transaction(
-          Object.values(transactions)
+        let userId: string | undefined = undefined;
+
+        if (processArguments.includes('-u')) {
+          const userIdCommandIndex = processArguments.findIndex(
+            v => v === '-u'
+          );
+          userId = processArguments[userIdCommandIndex + 1];
+
+          if (!userId) {
+            throw Error('User ID is required');
+          }
+        }
+
+        const [, ...createdTransactions] = await prisma.$transaction([
+          prisma.transaction.deleteMany({ where: { userId } }),
+          ...Object.values(transactions)
             .sort(
               ({ entries: [a] }, { entries: [b] }) =>
                 Number(a.id ?? 0) - Number(b.id ?? 0)
@@ -821,7 +835,7 @@ if (!processArguments.includes('--dry')) {
                 }
               })
             )
-        );
+        ]);
 
         console.log(
           `${createdTransactions.length} transactions were successfully created`
