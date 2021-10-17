@@ -15,7 +15,7 @@ export default createLogger({
     errors({ stack: true }),
     environment === Environment.PRODUCTION ? json() : prettyPrint()
   ),
-  transports: [new Console()],
+  transports: [new Console({ level: 'info' })],
   defaultMeta: {
     service: name
   }
