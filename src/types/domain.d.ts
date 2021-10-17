@@ -20,6 +20,7 @@ export interface ScheduledTransaction extends ScheduledTransactionDBO {
 export interface FutureBalance {
   date: Date;
   balance: number;
+  isScheduled?: boolean;
 }
 
 export interface BudgetAccountRootObject {

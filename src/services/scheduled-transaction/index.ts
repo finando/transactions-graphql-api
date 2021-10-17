@@ -1,8 +1,9 @@
-import { RRule } from 'rrule';
-
 import { Service } from '@app/utils/service';
-import { mapToRecurrenceFrequency } from '@app/utils/common';
-import { localDateToUtc } from '@app/utils/date';
+import {
+  mapToRecurrenceFrequency,
+  calculateFrequencyMultiplier
+} from '@app/utils/common';
+import { localDateToUtc, getRecurringScheduledDates } from '@app/utils/date';
 import type {
   ScheduledTransaction,
   FutureBalance,
@@ -41,13 +42,18 @@ class ScheduledTransactionService extends Service {
 
   public async listScheduledTransactions(
     userId: string,
-    accountId?: string
+    accountId?: string,
+    toDate: Date = new Date()
   ): Promise<ScheduledTransaction[]> {
     try {
       const scheduledTransactions =
         await this.prisma.scheduledTransaction.findMany({
           include: { entries: true },
-          where: { userId, entries: { some: { account: accountId } } },
+          where: {
+            userId,
+            entries: { some: { account: accountId } },
+            createdAt: { lte: toDate }
+          },
           orderBy: {
             createdAt: 'asc'
           }
@@ -166,16 +172,21 @@ class ScheduledTransactionService extends Service {
   public async calculateFutureAccountBalance(
     userId: string,
     accountId: string,
-    date: Date
+    toDate: Date,
+    transactions?: ScheduledTransaction[]
   ): Promise<number> {
-    return (await this.listScheduledTransactions(userId, accountId)).reduce(
+    return (
+      Array.isArray(transactions)
+        ? transactions
+        : await this.listScheduledTransactions(userId, accountId)
+    ).reduce(
       (previous, { entries, createdAt, frequency }) =>
         previous +
         entries.reduce(
           (previous, { account, debit, credit }) =>
             previous +
             (account === accountId
-              ? this.calculateFrequencyMultiplier(createdAt, date, frequency) *
+              ? calculateFrequencyMultiplier(createdAt, toDate, frequency) *
                 (debit - credit)
               : 0),
           0
@@ -198,46 +209,36 @@ class ScheduledTransactionService extends Service {
       return [];
     }
 
-    return Promise.all(
-      new RRule({
-        dtstart: from,
-        until: to,
-        freq: mapToRecurrenceFrequency(frequency)
-      })
-        .all()
-        .map(async date => ({
-          date,
-          balance: await this.calculateFutureAccountBalance(
-            userId,
-            accountId,
-            date
-          )
-        }))
+    const transactions = await this.listScheduledTransactions(
+      userId,
+      accountId,
+      toDate
     );
-  }
 
-  private calculateFrequencyMultiplier(
-    fromDate: Date,
-    toDate: Date,
-    frequency: Frequency | null
-  ): number {
-    const now = localDateToUtc(new Date());
-    const from = localDateToUtc(fromDate);
-    const to = localDateToUtc(toDate);
+    const dates = getRecurringScheduledDates(
+      from,
+      to,
+      mapToRecurrenceFrequency(frequency),
+      transactions.map(({ createdAt }) => createdAt)
+    );
 
-    if (
-      to.getTime() < from.getTime() ||
-      to.getTime() <= now.getTime() ||
-      !frequency
-    ) {
-      return 0;
-    }
-
-    return new RRule({
-      dtstart: from,
-      until: to,
-      freq: mapToRecurrenceFrequency(frequency)
-    }).all(date => date.getTime() >= now.getTime()).length;
+    return transactions.length > 0
+      ? Promise.all(
+          dates.map(
+            async date =>
+              ({
+                date,
+                isScheduled: true,
+                balance: await this.calculateFutureAccountBalance(
+                  userId,
+                  accountId,
+                  date,
+                  transactions
+                )
+              } as FutureBalance)
+          )
+        )
+      : [];
   }
 }
 

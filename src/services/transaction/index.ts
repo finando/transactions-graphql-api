@@ -1,8 +1,6 @@
-import { RRule } from 'rrule';
-
 import { Service } from '@app/utils/service';
 import { mapToRecurrenceFrequency } from '@app/utils/common';
-import { localDateToUtc } from '@app/utils/date';
+import { localDateToUtc, getRecurringDates } from '@app/utils/date';
 import type {
   Transaction,
   FutureBalance,
@@ -38,12 +36,18 @@ class TransactionService extends Service {
 
   public async listTransactions(
     userId: string,
-    accountId?: string
+    accountId: string,
+    fromDate?: Date,
+    toDate?: Date
   ): Promise<Transaction[]> {
     try {
       const transactions = await this.prisma.transaction.findMany({
         include: { entries: true },
-        where: { userId, entries: { some: { account: accountId } } },
+        where: {
+          userId,
+          entries: { some: { account: accountId } },
+          createdAt: { gte: fromDate, lte: toDate }
+        },
         orderBy: {
           createdAt: 'asc'
         }
@@ -145,6 +149,70 @@ class TransactionService extends Service {
     userId: string,
     accountId: string,
     initialBalance: number,
+    transactions?: Transaction[]
+  ): Promise<number> {
+    return (
+      Array.isArray(transactions)
+        ? transactions
+        : await this.listTransactions(userId, accountId)
+    ).reduce(
+      (previous, { entries }) =>
+        previous +
+        entries.reduce(
+          (previous, { account, debit, credit }) =>
+            previous + (account === accountId ? debit - credit : 0),
+          0
+        ),
+      initialBalance
+    );
+  }
+
+  public async listFutureAccountBalances(
+    userId: string,
+    accountId: string,
+    initialBalance: number,
+    fromDate: Date,
+    toDate: Date,
+    frequency: Frequency = Frequency.DAILY
+  ): Promise<FutureBalance[]> {
+    const from = localDateToUtc(fromDate);
+    const to = localDateToUtc(toDate);
+
+    if (to.getTime() <= from.getTime()) {
+      return [];
+    }
+
+    const [balance, transactions] = await Promise.all([
+      this.calculateAccountBalance(userId, accountId, initialBalance, fromDate),
+      this.listTransactions(userId, accountId, fromDate, toDate)
+    ]);
+
+    const dates = getRecurringDates(
+      from,
+      to,
+      mapToRecurrenceFrequency(frequency),
+      transactions.map(({ createdAt }) => createdAt)
+    );
+
+    return Promise.all(
+      dates.map(async date => ({
+        date,
+        balance: await this.calculateFutureAccountBalance(
+          userId,
+          accountId,
+          balance,
+          transactions.filter(
+            ({ createdAt }) => createdAt.getTime() <= date.getTime()
+          )
+        )
+      }))
+    );
+  }
+
+  private async calculateAccountBalance(
+    userId: string,
+    accountId: string,
+    initialBalance: number,
     date: Date = new Date()
   ): Promise<number> {
     const [
@@ -176,40 +244,6 @@ class TransactionService extends Service {
     ]);
 
     return (initialBalance ?? 0) + (debit ?? 0) - (credit ?? 0);
-  }
-
-  public async listFutureAccountBalances(
-    userId: string,
-    accountId: string,
-    initialBalance: number,
-    fromDate: Date,
-    toDate: Date,
-    frequency: Frequency = Frequency.DAILY
-  ): Promise<FutureBalance[]> {
-    const from = localDateToUtc(fromDate);
-    const to = localDateToUtc(toDate);
-
-    if (to.getTime() <= from.getTime()) {
-      return [];
-    }
-
-    return Promise.all(
-      new RRule({
-        dtstart: from,
-        until: to,
-        freq: mapToRecurrenceFrequency(frequency)
-      })
-        .all()
-        .map(async date => ({
-          date,
-          balance: await this.calculateFutureAccountBalance(
-            userId,
-            accountId,
-            initialBalance,
-            date
-          )
-        }))
-    );
   }
 }
 

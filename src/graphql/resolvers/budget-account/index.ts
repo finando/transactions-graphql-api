@@ -59,11 +59,21 @@ export const lookups: BudgetAccountResolvers[Operation.LOOKUP] = {
       )
         .flat()
         .reduce(
-          (previous, { date, balance }) => ({
+          (previous, { date, balance, isScheduled }) => ({
             ...previous,
             [+date]: {
               date,
-              balance: (previous[+date]?.balance ?? 0) + balance
+              balance:
+                (previous[
+                  isScheduled
+                    ? +(
+                        Object.keys(previous)
+                          .map(v => Number(v))
+                          .sort()
+                          .pop() ?? 0
+                      )
+                    : +date
+                ]?.balance ?? 0) + balance
             }
           }),
           {} as Record<number, FutureBalance>

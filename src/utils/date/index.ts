@@ -29,6 +29,32 @@ export const getRecurringDates = (
     })
   );
 
+  additionalDates.forEach(date => {
+    rruleSet.rdate(date);
+    rruleSet.rdate(new Date(date.getTime() - 1));
+  });
+
+  rruleSet.rdate(to);
+
+  return rruleSet.all();
+};
+
+export const getRecurringScheduledDates = (
+  from: Date,
+  to: Date,
+  frequency: Frequency,
+  additionalDates: Date[] = []
+): Date[] => {
+  const rruleSet = new RRuleSet();
+
+  rruleSet.rrule(
+    new RRule({
+      dtstart: from,
+      until: to,
+      freq: frequency
+    })
+  );
+
   additionalDates.forEach(dtstart => {
     rruleSet.rrule(
       new RRule({
