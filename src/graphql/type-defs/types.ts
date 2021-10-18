@@ -49,10 +49,10 @@ export default gql`
     balance(to: DateTime, currency: Currency): Balance!
       @requires(fields: "initialBalance")
     balances(
-      from: DateTime!
-      to: DateTime!
+      from: DateTime
+      to: DateTime
       frequency: Frequency
-      currency: Currency!
+      currency: Currency
     ): [FutureBalance!]! @requires(fields: "initialBalance")
   }
 
@@ -62,10 +62,10 @@ export default gql`
     balance(to: DateTime, currency: Currency): Balance!
       @requires(fields: "initialBalance")
     balances(
-      from: DateTime!
-      to: DateTime!
+      from: DateTime
+      to: DateTime
       frequency: Frequency
-      currency: Currency!
+      currency: Currency
     ): [FutureBalance!]! @requires(fields: "initialBalance")
   }
 `;

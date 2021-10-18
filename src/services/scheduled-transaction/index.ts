@@ -234,22 +234,31 @@ class ScheduledTransactionService extends Service {
   public async listFutureAccountBalances(
     userId: string,
     accountId: string,
-    fromDate: Date,
+    fromDate: Date | undefined,
     toDate: Date,
     frequency: Frequency = Frequency.DAILY
   ): Promise<FutureBalance[]> {
+    const transactions = await this.listScheduledTransactions(
+      userId,
+      accountId,
+      toDate
+    );
+
+    if (!fromDate) {
+      fromDate = new Date(
+        transactions
+          .map(({ createdAt }) => createdAt.getTime())
+          .sort()
+          .shift() ?? 0
+      );
+    }
+
     const from = localDateToUtc(fromDate);
     const to = localDateToUtc(toDate);
 
     if (to.getTime() <= from.getTime()) {
       return [];
     }
-
-    const transactions = await this.listScheduledTransactions(
-      userId,
-      accountId,
-      toDate
-    );
 
     const dates = getRecurringScheduledDates(
       from,

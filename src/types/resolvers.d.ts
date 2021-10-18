@@ -12,8 +12,8 @@ import type {
   CreateScheduledTransactionParams,
   UpdateScheduledTransactionParams,
   DeleteScheduledTransactionParams,
-  FutureBalancesParams,
   BalanceParams,
+  BalancesParams,
   Transaction,
   ScheduledTransaction,
   FutureBalance,
@@ -65,7 +65,7 @@ export interface BudgetAccountResolvers {
   [Operation.LOOKUP]: {
     balance: Resolver<BalanceParams, Balance, BudgetAccountRootObject>;
     balances: Resolver<
-      FutureBalancesParams,
+      BalancesParams,
       FutureBalance[],
       BudgetAccountRootObject
     >;
@@ -76,7 +76,7 @@ export interface TrackingAccountResolvers {
   [Operation.LOOKUP]: {
     balance: Resolver<BalanceParams, Balance, TrackingAccountRootObject>;
     balances: Resolver<
-      FutureBalancesParams,
+      BalancesParams,
       FutureBalance[],
       BudgetAccountRootObject
     >;

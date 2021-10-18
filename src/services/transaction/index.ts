@@ -149,21 +149,30 @@ class TransactionService extends Service {
   public async listFutureAccountBalances(
     userId: string,
     accountId: string,
-    fromDate: Date,
+    fromDate: Date | undefined,
     toDate: Date,
     frequency: Frequency = Frequency.DAILY
   ): Promise<FutureBalance[]> {
+    const [{ running: balance }, transactions] = await Promise.all([
+      this.calculateAccountBalance(userId, accountId, fromDate),
+      this.listTransactions(userId, accountId, fromDate, toDate)
+    ]);
+
+    if (!fromDate) {
+      fromDate = new Date(
+        transactions
+          .map(({ createdAt }) => createdAt.getTime())
+          .sort()
+          .shift() ?? 0
+      );
+    }
+
     const from = localDateToUtc(fromDate);
     const to = localDateToUtc(toDate);
 
     if (to.getTime() <= from.getTime()) {
       return [];
     }
-
-    const [{ running: balance }, transactions] = await Promise.all([
-      this.calculateAccountBalance(userId, accountId, fromDate),
-      this.listTransactions(userId, accountId, fromDate, toDate)
-    ]);
 
     const dates = getRecurringDates(
       from,
