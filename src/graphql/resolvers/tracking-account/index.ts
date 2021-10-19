@@ -24,7 +24,7 @@ export const lookups: TrackingAccountResolvers[Operation.LOOKUP] = {
         currency: currency ?? Currency.NOK,
         cleared: initialBalance ?? 0,
         uncleared: 0,
-        running: 0
+        running: initialBalance ?? 0
       } as Balance
     ),
   balances: async ({
@@ -86,7 +86,7 @@ export const lookups: TrackingAccountResolvers[Operation.LOOKUP] = {
       .map(({ cleared, uncleared, running, ...rest }) => ({
         ...rest,
         cleared: initialBalance + cleared,
-        uncleared: initialBalance + uncleared,
+        uncleared: uncleared,
         running: initialBalance + running
       }))
 };
