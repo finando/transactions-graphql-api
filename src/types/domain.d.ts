@@ -17,18 +17,13 @@ export interface ScheduledTransaction extends ScheduledTransactionDBO {
   entries: Entry[];
 }
 
-export interface FutureBalance {
-  date: Date;
-  balance: number;
-  isScheduled?: boolean;
-}
-
 export interface Balance {
   date: Date;
   currency: Currency;
   cleared: number;
   uncleared: number;
   running: number;
+  isScheduled?: boolean;
 }
 
 export interface BudgetAccountRootObject {

@@ -4,7 +4,6 @@ import { localDateToUtc, getRecurringDates } from '@app/utils/date';
 import type {
   Transaction,
   Balance,
-  FutureBalance,
   CreateTransactionInput,
   UpdateTransactionInput
 } from '@app/types';
@@ -146,13 +145,13 @@ class TransactionService extends Service {
     }
   }
 
-  public async listFutureAccountBalances(
+  public async listAccountBalances(
     userId: string,
     accountId: string,
     fromDate: Date | undefined,
     toDate: Date,
     frequency: Frequency = Frequency.DAILY
-  ): Promise<FutureBalance[]> {
+  ): Promise<Balance[]> {
     const [{ running: balance }, transactions] = await Promise.all([
       this.calculateAccountBalance(userId, accountId, fromDate),
       this.listTransactions(userId, accountId, fromDate, toDate)
@@ -184,14 +183,17 @@ class TransactionService extends Service {
     return Promise.all(
       dates.map(async date => ({
         date,
-        balance:
-          (await this.calculateFutureAccountBalance(
+        currency: Currency.NOK,
+        cleared:
+          (await this.calculateClearedAccountBalance(
             userId,
             accountId,
             transactions.filter(
               ({ createdAt }) => createdAt.getTime() <= date.getTime()
             )
-          )) + balance
+          )) + balance,
+        uncleared: 0,
+        running: 0
       }))
     );
   }
@@ -287,7 +289,7 @@ class TransactionService extends Service {
     };
   }
 
-  private async calculateFutureAccountBalance(
+  private async calculateClearedAccountBalance(
     userId: string,
     accountId: string,
     transactions?: Transaction[]

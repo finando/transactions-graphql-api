@@ -30,11 +30,6 @@ export default gql`
     updatedAt: DateTime!
   }
 
-  type FutureBalance {
-    date: DateTime!
-    balance: Int!
-  }
-
   type Balance {
     date: DateTime!
     currency: Currency!
@@ -53,7 +48,7 @@ export default gql`
       to: DateTime
       frequency: Frequency
       currency: Currency
-    ): [FutureBalance!]! @requires(fields: "initialBalance")
+    ): [Balance!]! @requires(fields: "initialBalance")
   }
 
   extend type TrackingAccount @key(fields: "id") {
@@ -66,6 +61,6 @@ export default gql`
       to: DateTime
       frequency: Frequency
       currency: Currency
-    ): [FutureBalance!]! @requires(fields: "initialBalance")
+    ): [Balance!]! @requires(fields: "initialBalance")
   }
 `;

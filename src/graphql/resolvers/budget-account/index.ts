@@ -1,8 +1,4 @@
-import type {
-  BudgetAccountResolvers,
-  FutureBalance,
-  Balance
-} from '@app/types';
+import type { BudgetAccountResolvers, Balance } from '@app/types';
 import { Operation, Currency } from '@app/enums';
 
 export const lookups: BudgetAccountResolvers[Operation.LOOKUP] = {
@@ -39,14 +35,14 @@ export const lookups: BudgetAccountResolvers[Operation.LOOKUP] = {
     Object.values(
       (
         await Promise.all([
-          transactionService.listFutureAccountBalances(
+          transactionService.listAccountBalances(
             userId,
             id,
             from,
             to,
             frequency
           ),
-          scheduledTransactionService.listFutureAccountBalances(
+          scheduledTransactionService.listAccountBalances(
             userId,
             id,
             from,
@@ -57,26 +53,40 @@ export const lookups: BudgetAccountResolvers[Operation.LOOKUP] = {
       )
         .flat()
         .reduce(
-          (previous, { date, balance, isScheduled }) => ({
-            ...previous,
-            [+date]: {
-              date,
-              balance:
-                (previous[
-                  isScheduled
-                    ? +(
-                        Object.keys(previous)
-                          .map(v => Number(v))
-                          .sort()
-                          .pop() ?? 0
-                      )
-                    : +date
-                ]?.balance ?? 0) + balance
-            }
-          }),
-          {} as Record<number, FutureBalance>
+          (previous, { date, currency, cleared, uncleared, isScheduled }) => {
+            const closestDate = isScheduled
+              ? +(
+                  Object.keys(previous)
+                    .map(v => Number(v))
+                    .sort()
+                    .pop() ?? 0
+                )
+              : +date;
+
+            const clearedBalance =
+              (previous[closestDate]?.cleared ?? 0) + cleared;
+            const unclearedBalance =
+              (previous[closestDate]?.uncleared ?? 0) + uncleared;
+
+            return {
+              ...previous,
+              [+date]: {
+                date,
+                currency,
+                cleared: clearedBalance,
+                uncleared: unclearedBalance,
+                running: clearedBalance + unclearedBalance
+              }
+            };
+          },
+          {} as Record<number, Balance>
         )
     )
       .sort(({ date: a }, { date: b }) => a.getTime() - b.getTime())
-      .map(({ date, balance }) => ({ date, balance: initialBalance + balance }))
+      .map(({ cleared, uncleared, running, ...rest }) => ({
+        ...rest,
+        cleared: initialBalance + cleared,
+        uncleared: initialBalance + uncleared,
+        running: initialBalance + running
+      }))
 };

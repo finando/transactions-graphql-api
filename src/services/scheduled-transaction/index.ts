@@ -6,7 +6,6 @@ import {
 import { localDateToUtc, getRecurringScheduledDates } from '@app/utils/date';
 import type {
   ScheduledTransaction,
-  FutureBalance,
   Balance,
   CreateScheduledTransactionInput,
   UpdateScheduledTransactionInput
@@ -205,39 +204,13 @@ class ScheduledTransactionService extends Service {
     };
   }
 
-  public async calculateFutureAccountBalance(
-    userId: string,
-    accountId: string,
-    toDate: Date,
-    transactions?: ScheduledTransaction[]
-  ): Promise<number> {
-    return (
-      Array.isArray(transactions)
-        ? transactions
-        : await this.listScheduledTransactions(userId, accountId, toDate)
-    ).reduce(
-      (previous, { entries, createdAt, frequency }) =>
-        previous +
-        entries.reduce(
-          (previous, { account, debit, credit }) =>
-            previous +
-            (account === accountId
-              ? calculateFrequencyMultiplier(createdAt, toDate, frequency) *
-                (debit - credit)
-              : 0),
-          0
-        ),
-      0
-    );
-  }
-
-  public async listFutureAccountBalances(
+  public async listAccountBalances(
     userId: string,
     accountId: string,
     fromDate: Date | undefined,
     toDate: Date,
     frequency: Frequency = Frequency.DAILY
-  ): Promise<FutureBalance[]> {
+  ): Promise<Balance[]> {
     const transactions = await this.listScheduledTransactions(
       userId,
       accountId,
@@ -273,17 +246,46 @@ class ScheduledTransactionService extends Service {
             async date =>
               ({
                 date,
-                isScheduled: true,
-                balance: await this.calculateFutureAccountBalance(
+                currency: Currency.NOK,
+                cleared: 0,
+                uncleared: await this.calculateUnclearedAccountBalance(
                   userId,
                   accountId,
                   date,
                   transactions
-                )
-              } as FutureBalance)
+                ),
+                running: 0,
+                isScheduled: true
+              } as Balance)
           )
         )
       : [];
+  }
+
+  private async calculateUnclearedAccountBalance(
+    userId: string,
+    accountId: string,
+    toDate: Date,
+    transactions?: ScheduledTransaction[]
+  ): Promise<number> {
+    return (
+      Array.isArray(transactions)
+        ? transactions
+        : await this.listScheduledTransactions(userId, accountId, toDate)
+    ).reduce(
+      (previous, { entries, createdAt, frequency }) =>
+        previous +
+        entries.reduce(
+          (previous, { account, debit, credit }) =>
+            previous +
+            (account === accountId
+              ? calculateFrequencyMultiplier(createdAt, toDate, frequency) *
+                (debit - credit)
+              : 0),
+          0
+        ),
+      0
+    );
   }
 }
 
