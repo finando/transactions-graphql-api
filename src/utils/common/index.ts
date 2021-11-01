@@ -81,12 +81,12 @@ export const calculateFrequencyMultiplier = (
   const from = localDateToUtc(fromDate);
   const to = localDateToUtc(toDate);
 
-  if (
-    to.getTime() < from.getTime() ||
-    to.getTime() <= now.getTime() ||
-    !frequency
-  ) {
+  if (to.getTime() < from.getTime() || to.getTime() <= now.getTime()) {
     return 0;
+  }
+
+  if (!frequency) {
+    return 1;
   }
 
   return new RRule({
