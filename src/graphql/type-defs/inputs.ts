@@ -40,7 +40,7 @@ export default gql`
 
   input UpdateScheduledTransactionInput {
     entries: [UpdateEntryInput!]
-    frequenct: Frequency
+    frequency: Frequency
     description: String
     tags: [Tag!]
     createdAt: DateTime
