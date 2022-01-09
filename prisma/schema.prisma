@@ -58,6 +58,7 @@ enum Tag {
   EXPENSE_INSURANCE_LIFE
   EXPENSE_INSURANCE_HEALTH
   EXPENSE_INSURANCE_DENTAL
+  EXPENSE_INSURANCE_TRAVEL
   EXPENSE_HEALTH_CARE
   EXPENSE_HEALTH_CARE_PRIMARY
   EXPENSE_HEALTH_CARE_DENTAL
@@ -140,24 +141,24 @@ model Entry {
 }
 
 model Transaction {
-  id          String   @id @default(cuid())
+  id          String            @id @default(cuid())
   userId      String
   entries     Entry[]
   status      TransactionStatus @default(CLEARED)
   description String?
   tags        Tag[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @default(now()) @updatedAt
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @default(now()) @updatedAt
 }
 
 model ScheduledTransaction {
-  id          String     @id @default(cuid())
+  id          String            @id @default(cuid())
   userId      String
   entries     Entry[]
   status      TransactionStatus @default(UNCLEARED)
   frequency   Frequency?
   description String?
   tags        Tag[]
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @default(now()) @updatedAt
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @default(now()) @updatedAt
 }
