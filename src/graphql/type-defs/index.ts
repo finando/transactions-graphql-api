@@ -16,6 +16,11 @@ export default gql`
 
     listTransactions(accountId: ID): [Transaction!]!
 
+    listLatestTransactions(
+      accountId: ID
+      paginationInput: PaginationInput = { take: 10 }
+    ): TransactionsPagedResult!
+
     getScheduledTransaction(id: ID!): ScheduledTransaction
 
     listScheduledTransactions(accountId: ID): [ScheduledTransaction!]!

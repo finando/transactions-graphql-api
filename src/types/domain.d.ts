@@ -26,6 +26,16 @@ export interface Balance {
   isScheduled?: boolean;
 }
 
+export interface PaginationInput {
+  cursor: string;
+  take: number;
+}
+
+export interface PagedResult<T> {
+  data: T[];
+  has_more: boolean;
+}
+
 export interface BudgetAccountRootObject {
   id: string;
   initialBalance: number;
@@ -34,6 +44,11 @@ export interface BudgetAccountRootObject {
 export interface TrackingAccountRootObject {
   id: string;
   initialBalance: number;
+}
+
+export interface ListLatestTransactionsInput {
+  accountId?: string;
+  paginationInput?: PaginationInput;
 }
 
 export interface CreateEntryInput {

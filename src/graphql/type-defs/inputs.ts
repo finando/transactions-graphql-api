@@ -45,4 +45,9 @@ export default gql`
     tags: [Tag!]
     createdAt: DateTime
   }
+
+  input PaginationInput {
+    cursor: String
+    take: Int
+  }
 `;

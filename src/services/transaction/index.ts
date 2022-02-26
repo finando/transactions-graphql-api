@@ -4,6 +4,8 @@ import { localDateToUtc, getRecurringDates } from '@app/utils/date';
 import type {
   Transaction,
   Balance,
+  PagedResult,
+  ListLatestTransactionsInput,
   CreateTransactionInput,
   UpdateTransactionInput
 } from '@app/types';
@@ -58,6 +60,52 @@ class TransactionService extends Service {
       });
 
       return transactions;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  public async listLatestTransactions(
+    userId: string,
+    { accountId, paginationInput }: ListLatestTransactionsInput
+  ): Promise<PagedResult<Transaction>> {
+    try {
+      const transactions = await this.prisma.transaction.findMany({
+        take: paginationInput?.take ?? 10,
+        skip: paginationInput?.cursor ? 1 : undefined,
+        cursor: paginationInput?.cursor
+          ? { id: paginationInput?.cursor }
+          : undefined,
+        include: { entries: true },
+        where: {
+          userId,
+          entries: { some: { account: accountId } }
+        },
+        orderBy: {
+          createdAt: 'desc'
+        }
+      });
+
+      const lastTransaction = await this.prisma.transaction.findFirst({
+        select: { id: true },
+        where: {
+          userId,
+          entries: { some: { account: accountId } }
+        },
+        orderBy: {
+          createdAt: 'asc'
+        }
+      });
+
+      this.logger.info(`Found ${transactions.length} transactions`, {
+        accountId
+      });
+
+      return {
+        data: transactions,
+        has_more:
+          transactions[transactions.length - 1].id !== lastTransaction?.id
+      };
     } catch (error) {
       throw this.handleError(error);
     }

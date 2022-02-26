@@ -4,6 +4,7 @@ import type {
   Resolver,
   GetTransactionParams,
   ListTransactionsParams,
+  ListLatestTransactionsParams,
   CreateTransactionParams,
   UpdateTransactionParams,
   DeleteTransactionParams,
@@ -17,6 +18,7 @@ import type {
   Transaction,
   ScheduledTransaction,
   Balance,
+  PagedResult,
   BudgetAccountRootObject,
   TrackingAccountRootObject
 } from '.';
@@ -25,6 +27,10 @@ export interface TransactionResolvers {
   [Operation.QUERY]: {
     getTransaction: Resolver<GetTransactionParams, Transaction | null>;
     listTransactions: Resolver<ListTransactionsParams, Transaction[]>;
+    listLatestTransactions: Resolver<
+      ListLatestTransactionsParams,
+      PagedResult<Transaction>
+    >;
   };
   [Operation.MUTATION]: {
     createTransaction: Resolver<CreateTransactionParams, Transaction>;

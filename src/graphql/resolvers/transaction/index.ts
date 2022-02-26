@@ -9,7 +9,15 @@ export const queries: TransactionResolvers[Operation.QUERY] = {
   listTransactions: async ({
     context: { userId, transactionService },
     input: { accountId }
-  }) => transactionService.listTransactions(userId, accountId)
+  }) => transactionService.listTransactions(userId, accountId),
+  listLatestTransactions: async ({
+    context: { userId, transactionService },
+    input: { accountId, paginationInput }
+  }) =>
+    transactionService.listLatestTransactions(userId, {
+      accountId,
+      paginationInput
+    })
 };
 
 export const mutations: TransactionResolvers[Operation.MUTATION] = {

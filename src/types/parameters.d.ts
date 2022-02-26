@@ -1,6 +1,7 @@
 import type {
   Currency,
   Frequency,
+  PaginationInput,
   CreateTransactionInput,
   UpdateTransactionInput,
   CreateScheduledTransactionInput,
@@ -13,6 +14,11 @@ export interface GetTransactionParams {
 
 export interface ListTransactionsParams {
   accountId?: string;
+}
+
+export interface ListLatestTransactionsParams {
+  accountId?: string;
+  paginationInput?: PaginationInput;
 }
 
 export interface CreateTransactionParams {

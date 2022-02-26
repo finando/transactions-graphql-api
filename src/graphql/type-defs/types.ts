@@ -38,6 +38,11 @@ export default gql`
     running: Int!
   }
 
+  type TransactionsPagedResult {
+    data: [Transaction!]!
+    has_more: Boolean!
+  }
+
   extend type BudgetAccount @key(fields: "id") {
     id: ID! @external
     initialBalance: Int! @external
