@@ -104,7 +104,9 @@ class TransactionService extends Service {
       return {
         data: transactions,
         has_more:
-          transactions[transactions.length - 1].id !== lastTransaction?.id
+          transactions.length > 0
+            ? transactions[transactions.length - 1]?.id !== lastTransaction?.id
+            : false
       };
     } catch (error) {
       throw this.handleError(error);
