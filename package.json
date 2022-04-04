@@ -46,7 +46,7 @@
     }
   },
   "dependencies": {
-    "@apollo/federation": "^0.35.0",
+    "@apollo/federation": "^0.36.0",
     "@prisma/client": "^3.5.0",
     "apollo-server": "^3.5.0",
     "graphql": "^16.3.0",
